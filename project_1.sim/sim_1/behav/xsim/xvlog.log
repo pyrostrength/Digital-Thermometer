@@ -1,0 +1,4 @@
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/voidknight/DigitalTherm/i2cmaster.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module i2cmaster
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/voidknight/DigitalTherm/i2cmaster_test.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module i2cmaster_test

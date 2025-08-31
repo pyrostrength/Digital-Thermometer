@@ -28,7 +28,7 @@ eval( EAInclude(ISEJScriptLib) );
 
 
 ISEStep( "vivado",
-         "-log i2cmaster.vds -m64 -product Vivado -mode batch -messageDb vivado.pb -notrace -source i2cmaster.tcl" );
+         "-log dual_portram.vds -m64 -product Vivado -mode batch -messageDb vivado.pb -notrace -source dual_portram.tcl" );
 
 
 

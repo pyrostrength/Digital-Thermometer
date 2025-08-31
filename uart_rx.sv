@@ -1,6 +1,11 @@
-/*UART receiver module
-No parity bits for data received, 1 byte data,
-1 start bit and 1 stop bit, oversampling scheme is 16x the baud rate*/
+/* UART receiver module
+UART transmission is initiated by pulling the transmission line low(sending
+1 low bit), followed by 8 data bits and 1 stop bit.
+
+Baud rate determined by baud rate generator module which
+generates a sample tick - 16 of such sample ticks represent
+a full UART cycle. Thus every 16 sample ticks a new bit is shifted
+out of the transmitter.*/
 
 module uart_rx (input logic clk,reset,
 				input logic tx,
@@ -12,20 +17,22 @@ module uart_rx (input logic clk,reset,
 				
 				state_type state, state_next;
 				logic[4:0] tick, tick_next; //Counts the number of sample ticks
-				logic[7:0] rx_reg, rx_next;
-				logic[2:0]  bit_count, bit_count_next; //Count the number of bits passed
+				logic[7:0] rx_reg, rx_next; //Shift register to hold in received data bits
+				logic[2:0]  bit_count, bit_count_next; //Count the number of data bits received
 				
 				always_ff @(posedge clk, posedge reset)
 					if(reset) begin
 						tick <= '0;
 						rx_reg <= '0;
 						state <= idle;
+						bit_count <= '0;
 					end
 					
 					else begin
 						tick <= tick_next;
 						rx_reg <= rx_next;
 						state <= state_next;
+						bit_count <= bit_count_next;
 					end
 				
 				assign received_byte = rx_reg;
@@ -62,7 +69,7 @@ module uart_rx (input logic clk,reset,
 						data:begin
 							if(sample_tick) begin
 								if(tick == 15) begin //Middle of data bit
-									rx_next = {tx ,rx_reg[7:1]};
+								    rx_next = {tx ,rx_reg[7:1]};
 									tick_next = '0; //Reset sampling tick counter
 									if(bit_count == 7) begin //Sampling the final data bit
 										state_next = stop;

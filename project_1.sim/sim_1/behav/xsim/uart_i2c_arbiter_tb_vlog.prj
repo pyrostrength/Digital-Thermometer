@@ -1,0 +1,12 @@
+# compile verilog/system verilog design source files
+sv xil_defaultlib  \
+"../../../../fifo_buffer.sv" \
+"../../../../fifo_validbuffer.sv" \
+"../../../../uart_i2c_arbiter.sv" \
+"../../../../uart_i2c_arbiter_tb.sv" \
+
+# compile glbl module
+verilog xil_defaultlib "glbl.v"
+
+# Do not sort compile order
+nosort

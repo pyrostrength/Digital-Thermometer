@@ -1,32 +1,43 @@
-/*UART receiver module
-No parity bits for data received, 1 byte data,
-1 start bit and 1 stop bit, oversampling scheme is 16x the baud rate*/
+/*UART transmitter module
+
+UART transmission is initiated by pulling the transmission line low(sending
+1 low bit), followed by 8 data bits and 1 stop bit.
+
+Baud rate determined by baud rate generator module which
+generates a sample tick - 16 of such sample ticks represent
+a full UART cycle. Thus every 16 sample ticks a new bit is shifted
+out of the transmitter. */
 
 module uart_tx (input logic clk,reset,
-				input logic[7:0] data_byte,
+				input logic[7:0] data_byte,//Data byte to be transmitted
 				input logic sample_tick,
-				input logic tx_start,
-				output logic tx_done_tick,
-				output logic tx);
+				input logic tx_start,//initiates UART transmission.
+				output logic tx_done_tick, //indicates when data transmission is complete
+				output logic tx);//output data bit
 				
 				typedef enum{idle,start,data,stop} state_type;
 				
 				state_type state, state_next;
 				logic[4:0] tick, tick_next; //Counts the number of sample ticks
-				logic[7:0] tx_reg, tx_next;
-				logic[2:0]  bit_count, bit_count_next; //Count the number of bits passed
+				logic[7:0] tx_reg, tx_next; //Holds data to be transmitted
+				logic[2:0]  bit_count, bit_count_next; //Counts the number of data bits passed
 				
 				always_ff @(posedge clk, posedge reset)
 					if(reset) begin
 						tick <= '0;
-						tx_reg <= '0;
+						/*Since l.s.bit of tx_reg is the data bit to be transmitted
+						we must ensure that by default l.s.bit is 1 since a bit of 0
+						signals start condition for UART transmission*/
+						tx_reg <= '1;
 						state <= idle;
+						bit_count <= '0;
 					end
 					
 					else begin
 						tick <= tick_next;
 						tx_reg <= tx_next;
 						state <= state_next;
+						bit_count <= bit_count_next;
 				    end
 				
 				assign tx = tx_reg[0];
@@ -40,18 +51,23 @@ module uart_tx (input logic clk,reset,
 					
 					case(state)
 						idle: begin
-							if(!tx_start) begin //If start bit has been pulled low
+						  /*We use an active low transmission start bit*/
+							if(!tx_start) begin 
 								state_next = start;
 								tick_next = '0;
 								bit_count_next = '0;
-								tx_next = data_byte;
+								tx_next = '0; //Start bit is 0. On next clock cycle tx goes low
 							end
 						end
 						
 						start: begin
+						    /*Start bit has been sent out. We estimate middle of start bit
+						    by counting up to 7 - UART in this design uses a 16x oversampling
+						    scheme.*/
 							if(sample_tick) begin
-								if(tick == 7) begin //Middle of start bit
+								if(tick == 15) begin //Approaching end of start bit.
 									state_next = data;
+									tx_next = data_byte;
 									tick_next = '0; //Reset the tick counter
 								end
 								else begin
@@ -62,14 +78,17 @@ module uart_tx (input logic clk,reset,
 						
 						data:begin
 							if(sample_tick) begin
-								if(tick == 15) begin //Middle of data bit
-								        tx_next = {1'b0 , tx_reg[7:1]}; //Shift out least significant bit first
+								if(tick == 15) begin //Approaching end of data bit
 									tick_next = '0; //Reset sampling tick counter
-									if(bit_count == 7) begin //Sampling the final data bit
+									if(bit_count == 7) begin //Transmitting the final data bit
 										state_next = stop;
+										bit_count_next = '0;
+										tx_next = '1; //Stop bit is a high signal
 									end
 									
 									else begin
+									   //Shift out least significant data bit first
+									    tx_next = {1'b0 , tx_reg[7:1]}; 
 										bit_count_next = bit_count + 1;
 									end
 								end
@@ -82,9 +101,9 @@ module uart_tx (input logic clk,reset,
 						
 						stop: begin
 							if(sample_tick) begin
-								if(tick == 15) begin
+								if(tick == 15) begin //Approaching end of stop bit
 									state_next = idle;
-									tx_done_tick = 1'b1;
+									tx_done_tick = 1'b1;//Signal transmission is complete
 								end
 								
 								else begin

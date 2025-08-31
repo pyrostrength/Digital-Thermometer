@@ -1,0 +1,4 @@
+Running: xsim.dir/uart_i2c_arbiter_tb_behav/xsimk -simmode gui -wdb uart_i2c_arbiter_tb_behav.wdb -simrunnum 0 -socket 33867
+Design successfully loaded
+Design Loading Memory Usage: 180356 KB (Peak: 180476 KB)
+Design Loading CPU Usage: 1190 ms

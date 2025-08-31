@@ -3,22 +3,22 @@
 # SW Build 5239630 on Fri Nov 08 22:34:34 MST 2024
 # IP Build 5239520 on Sun Nov 10 16:12:51 MST 2024
 # SharedData Build 5239561 on Fri Nov 08 14:39:27 MST 2024
-# Start of session at: Fri Aug  8 17:02:58 2025
-# Process ID         : 16452
+# Start of session at: Mon Aug 25 10:02:31 2025
+# Process ID         : 18246
 # Current directory  : /home/voidknight/DigitalTherm/project_1.runs/synth_1
-# Command line       : vivado -log i2cmaster.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source i2cmaster.tcl
-# Log file           : /home/voidknight/DigitalTherm/project_1.runs/synth_1/i2cmaster.vds
+# Command line       : vivado -log dual_portram.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source dual_portram.tcl
+# Log file           : /home/voidknight/DigitalTherm/project_1.runs/synth_1/dual_portram.vds
 # Journal file       : /home/voidknight/DigitalTherm/project_1.runs/synth_1/vivado.jou
 # Running On         : voidknight-XPS-13-7390
 # Platform           : Ubuntu
 # Operating System   : Ubuntu 24.04.2 LTS
 # Processor Detail   : Intel(R) Core(TM) i7-10710U CPU @ 1.10GHz
-# CPU Frequency      : 3745.537 MHz
+# CPU Frequency      : 2729.459 MHz
 # CPU Physical cores : 6
 # CPU Logical cores  : 12
 # Host memory        : 16445 MB
 # Swap memory        : 4294 MB
 # Total Virtual      : 20740 MB
-# Available Virtual  : 16292 MB
+# Available Virtual  : 15265 MB
 #-----------------------------------------------------------
-source i2cmaster.tcl -notrace
+source dual_portram.tcl -notrace

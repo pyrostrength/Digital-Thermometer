@@ -16,8 +16,8 @@ module baud_rate_generator(input logic clk,reset,
 						   /*Designer is in charge of specifying the baud rate and sys clock*/
 						   parameter SYS_FREQ = 100000000;
 						   parameter BAUD_RATE = 38400;
-						   parameter int DVSR = (SYS_FREQ/(BAUD_RATE*16))-1;
-						   parameter SIZE = $clog2(DVSR);
+						   localparam int DVSR = (SYS_FREQ/(BAUD_RATE*16))-1;
+						   localparam SIZE = $clog2(DVSR);
 						   
 						   
 						   logic[SIZE:0] count,count_next;

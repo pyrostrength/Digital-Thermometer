@@ -68,7 +68,8 @@ module temp_sensor(input logic clk,reset,
 				  
 				   /*If UART to I2C controller instruction queue is full
 				   signal to user to stop sending instructions*/
-				   output logic[3:0] stop_typing, 
+				   output logic[3:0] stop_typing,
+				   
 				   /*If user delays for 10 seconds in typing out instruction
 				   signal to user to retype instruction in its entirety*/
 				   output logic[3:0] time_out,
@@ -77,7 +78,8 @@ module temp_sensor(input logic clk,reset,
 				   inout tri sda);
 				  
 				   logic sample_tick; 	   
-				   baud_rate_generator baud_gen(.*);
+				   baud_rate_generator #(.SYS_FREQ(100000000),.BAUD_RATE(38400))
+				                                baudgen(.*);
 				   
 				   logic rx_done_tick_next,rx_done_tick;
 				   logic received_byte_next, received_byte;	    
@@ -100,19 +102,33 @@ module temp_sensor(input logic clk,reset,
 				   logic buffers_full; 
 				   logic[15:0] wr_data,wr_data_reg; 
 				   logic[7:0] mode,mode_reg; 
-				   logic initiate,initiate_reg; 
 				   logic stop_send;
 				   logic wr_addrbuffer,wr_opbuffer,wr_databuffer1;
 				   logic wr_databuffer2,wr_validbuffer;
 				   logic wr_addrbuffer_reg,wr_opbuffer_reg,wr_databuffer1_reg;
 				   logic wr_databuffer2_reg,wr_validbuffer_reg;  
-				   logic time_out; 
 				   logic[7:0] addr_pointer,addr_pointer_reg;
 
-				   //All 3 signals above are commands and data sent to i2c core.
-				   uart_i2c_tramsmitter uart_i2c_bridge(.*);
+                   logic times_up;
+				   uart_i2c_tramsmitter #(.SYS_FREQ(100000000),.PERIOD(10)) 
+				                        uart_i2c_bridge(.*,
+				                                        .time_out(times_up));
+				   
+				   
+				   /*Led flasher when instruction queue is full*/
+				   led_flasher #(.SYS_FREQ(100000000),.PERIOD(20))
+				                   interrupt_mod1(.*,
+				                                  .control(stop_send),
+				                                  .led_on(stop_typing));
+				   
 				    	    	
-				    	    	
+				   
+				   /*Led flasher when system times out*/
+				   led_flasher #(.SYS_FREQ(100000000),.PERIOD(20))
+				                   interrupt_mod2(.*,
+				                                  .control(times_up),
+				                                  .led_on(time_out));
+				   	    	
 				   //UART-I2C TRANSMITTER TO ARBITER INTERFACE REGISTER
 				   always_ff @(posedge clk,posedge reset)
 				        if(reset) begin
@@ -123,7 +139,6 @@ module temp_sensor(input logic clk,reset,
 				    	   addr_pointer_reg <= '0;
 				    	   mode_reg <= '0;
 				    	   wr_data_reg <= '0;
-				    	   initiate_reg <= '0;
 				    	end
 				    	                
 				    	else begin
@@ -134,7 +149,6 @@ module temp_sensor(input logic clk,reset,
 				    	   addr_pointer_reg <= addr_pointer;
 				    	   wr_data_reg <= wr_data;
 				    	   mode_reg <= mode;
-				    	   initiate_reg <= initiate;
 				    	end
 				    	
 				   logic i2c_ready;
@@ -167,7 +181,8 @@ module temp_sensor(input logic clk,reset,
 				   logic[7:0] i2c_op_info, i2c_op_info_reg;
 				   logic[7:0] i2c_instr_address, i2c_instr_address_reg;
 				  
-				   i2cmaster i2ccontroller(.*,
+				   i2cmaster #(.SYS_CLK_FREQ(100000000),.SCL_FREQ(200000))
+				             i2ccontroller(.*,
 				    	    			   .full_i2cbuffer(full_i2cbuffer),
 				    	    			   .wr_data(i2c_data),
 				    	    			   .mode(i2c_mode),
@@ -202,7 +217,7 @@ module temp_sensor(input logic clk,reset,
 				   logic data_ready;
 				   logic tx_complete;
 				   
-				   i2c_uart_arbiter i2c_to_uart (.*, //Output signal that indicates whether data is ready for transmission
+				   i2c_uart_arbiter i2c_to_uart (.*, 
 				     							 .i2c_retrieved_data(i2c_retrieved_data_reg),
 				     							 .i2c_instr_address(i2c_instr_address_reg),
 				     							 .i2c_op_info(i2c_op_info_reg),

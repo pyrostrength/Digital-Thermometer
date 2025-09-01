@@ -12,13 +12,14 @@ For a complete instruction from PC, UART data packet is in form:
 
 Start Byte and Stop Byte are all 1's.
 
-A timeout feature has been added in case too long of a delay(10 seconds)
+A timeout feature has been added in case too long of a delay(specified
+by user of the module through PERIOD and SYS_CLK_FREQ parameters)
 in between sending instruction info occurs. User will have to retype entire
 instruction and will be instructed to do so on software side by PC.
 
-If buffers are full and LED will flash for 20 seconds, 
+If buffers are full and LED will flash for a certain time period, 
 during which user is required to not send in any new instruction. 
-A time of 20 seconds was chosen to allow instruction queue to open up 
+Ample time should be chosen to allow instruction queue to open up 
 and to give user ample time to see LED and respond to it.
 //Might add a sound ping. -- i think i'll add a sound ping to the FPGA
 so I'd need a signal generator.
@@ -30,12 +31,17 @@ module uart_i2c_tramsmitter(input logic clk,reset,
 							input logic buffers_full, //if buffers are full we cannot queue the instruction. User must wait then repeat the instruction on PC end
 							output logic[15:0] wr_data, //Data to be written to I2C temperature sensor's registers.
 							output logic[7:0] mode, // Read 1 byte/2 bytes or write 1 byte or 2 bytes
-							output logic initiate, //Initiate an I2C transaction
 							output logic stop_send, //Instructs user to not send an instruction
 							output logic wr_addrbuffer,wr_opbuffer,wr_databuffer1,wr_databuffer2,wr_validbuffer, //Queue instruction information in their respective buffers
 							output logic time_out, //Repeat the entire instruction if user delays more than 10 seconds in completely specifying their wants.
 							output logic[7:0] addr_pointer); //Register on I2C temperature sensor to which operation is addressed.
-							    
+							
+							parameter SYS_FREQ = 100000000;
+                            parameter PERIOD = 20;
+                       
+                            localparam int MAX = SYS_FREQ * PERIOD;
+                            logic[31:0] max_count;
+                            
 							typedef enum{idle,address,operation,data1,data2,stop} state_type;
 							    
 							state_type state, state_next;
@@ -105,7 +111,7 @@ module uart_i2c_tramsmitter(input logic clk,reset,
 							    		   count_next = '0;
 							    		end
 							    			
-							    		else if(count == 999999999) begin //If 10 seconds pass without additional instr info, require that the user retype the instruction in its entirety
+							    		else if(count == max_count - 1) begin 
 							    		   count_next = '0;
 							    		   state_next = idle;
 							    		   time_out = 1'b1;
@@ -128,7 +134,7 @@ module uart_i2c_tramsmitter(input logic clk,reset,
 							    		   endcase
 							    		end
 							    			
-							    		else if(count == 999999999) begin //If 10 seconds pass with no additional  instr info, require that the user retype instruction in its entirety.
+							    		else if(count == max_count - 1) begin 
 							    		   count_next = '0;
 							    		   state_next = idle;
 							    		   time_out = 1'b1;
@@ -144,7 +150,7 @@ module uart_i2c_tramsmitter(input logic clk,reset,
 							    		   count_next = '0;
 							    		end
 							    			
-							    		else if(count == 999999999) begin //If 10 seconds pass with no additional  instr info, require that the user retype instruction in its entirety.
+							    		else if(count == max_count - 1) begin 
 							    		   count_next = '0;
 							    		   state_next = idle;
 							    		   time_out = 1'b1;
@@ -159,7 +165,7 @@ module uart_i2c_tramsmitter(input logic clk,reset,
 							    		   count_next = '0;
 							    		end
 							    			
-							    		else if(count == 999999999) begin //If 10 seconds pass with no additional  instr info, require that the user retype instruction in its entirety.
+							    		else if(count == max_count - 1) begin 
 							    		   count_next = '0;
 							    		   state_next = idle;
 							    		   time_out = 1'b1;
@@ -170,17 +176,19 @@ module uart_i2c_tramsmitter(input logic clk,reset,
 							    	stop: begin
 							    	    if(rx_done_tick) begin
 							    		   state_next = (received_byte == '1) ? idle:stop;
-							    		   initiate = (received_byte == '1);
-							    		   /*We only write to instruction queue when transmission is completed*/
-							    		   wr_validbuffer = 1'b1;
-							    		   wr_addrbuffer = 1'b1;
-							    		   wr_databuffer2 = 1'b1;
-							    		   wr_databuffer1 = 1'b1;
-							    		   wr_opbuffer = 1'b1;
+							    		   if(received_byte == '1) begin
+							    		       /*We only write to instruction queue 
+							    		       when transmission is completed. And */
+							    		       wr_validbuffer = 1'b1;
+							    		       wr_addrbuffer = 1'b1;
+							    		       wr_databuffer2 = 1'b1;
+							    		       wr_databuffer1 = 1'b1;
+							    		       wr_opbuffer = 1'b1;
+							    		   end
 							    		   count_next = '0;
 							    		 end
 							    			
-							    		 else if(count == 999999999) begin //If 10seconds is about to pass with no instruction, we clear all buffers written
+							    		 else if(count == max_count - 1) begin 
 							    		   count_next = '0;
 							    		   state_next = idle;
 							    		   time_out = 1'b1;

@@ -1,0 +1,5 @@
+Time resolution is 1 ps
+Error: Assertion violation
+Time: 50 ns  Iteration: 0  Process: /baudgen_tb/Initial17_3  File: /home/voidknight/DigitalTherm/baudgen_tb.sv
+Error: Assertion violation
+Time: 50 ns  Iteration: 0  Process: /baudgen_tb/Initial17_3  File: /home/voidknight/DigitalTherm/baudgen_tb.sv

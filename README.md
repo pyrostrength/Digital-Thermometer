@@ -35,8 +35,25 @@ Note: the timeout feature will be implemented on the FPGA side and on PC side. T
 will always notice the timeout especially when the LEDs on the FPGA are tiny. However, user will
 have to observe FPGA led's to make sure they aren't sending in too many instructions at once.
 
-Once relevant operation has been carried out by I2C controller in the processing pipeline
+Once relevant operation has been carried out by I2C controller in the FPGA processing pipeline,
+instruction info such as address of temp senosr register which instruction addressed, 
+operation performed and retrieved data is sent to PC. The communication packet for sending an instruction
+from PC is identical to that of sending it results back to PC. Thus transmission includes:
+- A start byte
+- Register Address Byte
+- Operation Byte
+- Optional Data Byte 1
+- Optional Data Byte 2
+- Stop Byte
 
+The only minor difference is that the operation byte includes some flag bits indicating
+whether read/write operations carried out by I2C controller and temp sensor were
+carried out correctly. To be specific, with the transmission of every byte, an ack bit/
+nack bit must be sent by the receiver. If no ack/nack bit is sent by receiver after it
+recieves a data byte, we indicate so in the flag bits.
+
+The data sent back from FPGA to PC over UART is analyzed and the results displayed on the
+console.
 
 
   

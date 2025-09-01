@@ -42,7 +42,6 @@ module i2cmaster(input logic clk,reset,
 				 input logic[6:0] serialbusaddr, //serial bus address for temp sensor
 				 input logic[7:0] reg_address, //address of temperature sensor register
 				 input logic[9:0] dvsr, //number of cycles of system clock per I2C clock cycle
-				 output logic[15:0] received_data, //Data received from reading SDA line
 				 output logic master_free, //Indicates controller is ready to initiate communication
 				 output logic[5:0] failure_signal,//Indicates read/write failure
 				 output logic i2c_data_rdy,//Indicates completion of communication
@@ -108,7 +107,6 @@ module i2cmaster(input logic clk,reset,
 				     	scl_reg <= '1;
 				     	bit_reg <= '0;
 				     	count <= '0;
-				     	received_data <= '0;
 				     	write_reg <= '0;
 				     	readbyte_reg <= '0; 
 				     			
@@ -128,7 +126,7 @@ module i2cmaster(input logic clk,reset,
 				     end
 				     		
 				     else begin
-				     	received_data <= received_data_next;
+				     	i2c_retrieved_data <= received_data_next;
 				     	readbyte_reg <= readbyte_next;
 				     	sda_reg <= sda_next;
 				     	count <= count_next;
@@ -188,7 +186,7 @@ module i2cmaster(input logic clk,reset,
 				    master_free = 1'b0;
 				    write_next = write_reg; 
 				    readbyte_next = readbyte_reg;
-				    received_data_next = received_data;
+				    received_data_next = i2c_retrieved_data;
 				     		
 				    //Failure signals need to be registered, otherwise they are lost
 				    sba_send_fail_next = sba_send_fail; 
@@ -273,7 +271,7 @@ module i2cmaster(input logic clk,reset,
 				     	  hold_sda = 1'b1; 
 				     	  scl_next = 1'b1;
 				     	  if(count == qutr - 1) begin
-				     	      received_data_next = (bit_reg != 8) ? {received_data[15:1], sda} : received_data;
+				     	      received_data_next = (bit_reg != 8) ? {i2c_retrieved_data[15:1], sda} : i2c_retrieved_data;
 				     	      sba_send_fail_next  = (bit_reg == 8 && sda != 0) ? 1'b1 : sba_send_fail;
 				     	  end
 				     	  if(count == half - 1) begin
@@ -321,7 +319,7 @@ module i2cmaster(input logic clk,reset,
 				     	  hold_sda = 1'b1; 
 				     	  scl_next = 1'b1; 
 				     	  if(count == qutr - 1) begin
-				     	      received_data_next = (bit_reg != 8) ? {received_data[15:1], sda} : received_data;
+				     	      received_data_next = (bit_reg != 8) ? {i2c_retrieved_data[15:1], sda} : i2c_retrieved_data;
 				     	      address_send_fail_next  = (bit_reg == 8 && sda != 0) ? 1'b1 : address_send_fail;
 				     	  end
 				     	  if(count == half - 1) begin
@@ -381,7 +379,7 @@ module i2cmaster(input logic clk,reset,
 				     	  hold_sda = 1'b1;
 				     	  scl_next = 1'b1;
 				     	  if(count == qutr - 1) begin
-				     	      received_data_next = (bit_reg != 8) ? {received_data[15:1], sda} : received_data;
+				     	      received_data_next = (bit_reg != 8) ? {i2c_retrieved_data[15:1], sda} : i2c_retrieved_data;
 				     	      write_byte1_fail_next  = (bit_reg == 8 && sda != 0) ? 1'b1 : write_byte1_fail;
 				     	  end
 				     	  if(count == half-1) begin
@@ -433,7 +431,7 @@ module i2cmaster(input logic clk,reset,
 				     	  hold_sda = 1'b1;
 				     	  scl_next = 1'b1; //Hold scl high.
 				     	  if(count == qutr - 1) begin
-				     	      received_data_next = (bit_reg != 8) ? {received_data[15:1], sda} : received_data;
+				     	      received_data_next = (bit_reg != 8) ? {i2c_retrieved_data[15:1], sda} : i2c_retrieved_data;
 				     	      write_byte2_fail_next  = (bit_reg == 8 && sda != 0) ? 1'b1 : write_byte2_fail;
 				     	  end
 				     	  if(count == half-1) begin
@@ -526,7 +524,7 @@ module i2cmaster(input logic clk,reset,
 				            read_phase = 1'b1;
 				     		scl_next = 1'b1; //Hold scl high.
 				     		if(count == qutr - 1) begin
-				     	      received_data_next = (bit_reg != 8) ? {received_data[15:1], sda} : received_data;
+				     	      received_data_next = (bit_reg != 8) ? {i2c_retrieved_data[15:1], sda} : i2c_retrieved_data;
 				     	      read_byte1_fail_next  = (bit_reg == 8 && sda != 0) ? 1'b1 : read_byte1_fail;
 				     	    end
 				     		
@@ -582,7 +580,7 @@ module i2cmaster(input logic clk,reset,
 				     	  scl_next = 1'b1; //Hold scl high.
 				     	  
 				     	  if(count == qutr - 1) begin
-				     	      received_data_next = (bit_reg != 8) ? {received_data[15:1], sda} : received_data;
+				     	      received_data_next = (bit_reg != 8) ? {i2c_retrieved_data[15:1], sda} : i2c_retrieved_data;
 				     	      read_byte2_fail_next  = (bit_reg == 8 && sda != 1) ? 1'b1 : read_byte2_fail;
 				     	  end
 				     	  

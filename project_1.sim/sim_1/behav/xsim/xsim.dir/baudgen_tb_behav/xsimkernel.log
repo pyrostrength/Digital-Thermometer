@@ -1,7 +1,4 @@
-Running: xsim.dir/baudgen_tb_behav/xsimk -simmode gui -wdb baudgen_tb_behav.wdb -simrunnum 0 -socket 39101
+Running: xsim.dir/baudgen_tb_behav/xsimk -simmode gui -wdb baudgen_tb_behav.wdb -simrunnum 0 -socket 48135
 Design successfully loaded
-Design Loading Memory Usage: 180308 KB (Peak: 180428 KB)
-Design Loading CPU Usage: 1070 ms
-Simulation completed
-Simulation Memory Usage: 263072 KB (Peak: 319576 KB)
-Simulation CPU Usage: 1090 ms
+Design Loading Memory Usage: 180304 KB (Peak: 180424 KB)
+Design Loading CPU Usage: 1160 ms

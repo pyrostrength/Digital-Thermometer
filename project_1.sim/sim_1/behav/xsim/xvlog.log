@@ -1,8 +1,4 @@
-INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/voidknight/DigitalTherm/fifo_buffer.sv" into library xil_defaultlib
-INFO: [VRFC 10-311] analyzing module fifo_buffer
-INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/voidknight/DigitalTherm/fifo_validbuffer.sv" into library xil_defaultlib
-INFO: [VRFC 10-311] analyzing module fifo_validbuffer
-INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/voidknight/DigitalTherm/uart_i2c_arbiter.sv" into library xil_defaultlib
-INFO: [VRFC 10-311] analyzing module uart_i2c_arbiter
-INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/voidknight/DigitalTherm/uart_i2c_arbiter_tb.sv" into library xil_defaultlib
-INFO: [VRFC 10-311] analyzing module uart_i2c_arbiter_tb
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/voidknight/DigitalTherm/baud_rate_generator.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module baud_rate_generator
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/voidknight/DigitalTherm/baudgen_tb.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module baudgen_tb

@@ -1,274 +1,246 @@
 /*
+Processing pipeline for the digital thermometer.
 Digital thermometer reads off temperature from temperature sensor with I2C interface
-and sends data to PC over UART. PC displays data on console.
+and transmits it to PC over UART.
 
-Additionally PC can send write/read requests to temperature sensor.
-Options include reading 1/2 bytes or writing 1 or 2 bytes to 
-temperature registers/status registers or configuration registers.
+Additionally PC can write data to / or read from temperature sensor by 
+sending an instruction over UART to FPGA. All operations on ADT7420 temp
+sensor are implemented in terms of reads/writes.
 
-Since all functionality of temperature sensor is implemented in terms of reads/writes to its
-registers further info can be found on the temperature sensor's datasheet (ADT7420)
-
-On PC side, user types in the instruction and the corresponding data is sent to the FPGA 
-through UART. Transmission requires that the data comes in the packet : 
--Start Byte: 8 bit signal all bits high to indicate start of instruction
--Address Byte: address of register on temperature sensor to which operation is directed
--Operation Byte: operation to be performed (read/write)
+Instruction from PC must come in the form of the data packet:
+- Start Byte - all 1's
+- Operation Byte: operation to be performed (read 1 byte, read 2 bytes, 
+write 1 byte, write 2 bytes)
 -(Optional) Data Byte 1: Byte/LSB to be written to temperature register
 -(Optional) Data Byte 2: Byte/MSB to be written to temperature register
 -Stop Byte: 8-bit signal all bits high to indicate end of instruction.
 
-Should the user delay in sending the necessary instruction in full, then
-a grace period of 10 seconds is given before a the system times out and the
-user is required to retype the instruction in its entirety.
+These bytes correspond to characters typed in sequentially on PC side, with
+the characters typed in being processed by a  C++ program, and the
+necessary byte sent over UART to FPGA.
 
-Buffers are added to store the instruction's as they await execution by the
-I2C controller. Buffers are also added to store the results of the I2C transaction.
+Should user delay for 10 seconds in typing in instruction info,then
+the instruction will be discarded. Should user, somehow, type in too many instructions
+at once, then an LED(may implement a sound ping later) will flash, telling the user
+to retype the instruction. Instruction typed in during LED flash will be discarded.
+Thus user should retype the instruction as soon as LED turns on(or sound pings)
 
-If buffers fill up, 8 led's light up indicating that the buffers are full.
-Hence users should retype their instructions when buffers are full and
-refrain from sending in too many instructions at once.
+Once all necessary instruction bytes are received, the data is buffered in a FIFO buffer.
+The instruction at the top of FIFO stack is read asynchronously and should the I2C
+controller be available for transmission, then it's data is passed onto the
+I2C controller and it's spot on the buffer cleared for another instruction.
+
+If there is no instruction waiting for the I2C buffer then by default a 2-byte temperature
+read is requested.
+
+The I2C controller, with the instruction data, carries out the relevant operation, 
+by communicating with the temp sensor. Once complete, the I2C controller 
+passes on the instruction's data and info{data read from temp sensor, 
+whether instruction is default mode or from PC, register address to which instruction 
+was addressed, operation performed, failure/success on operation} to the next pipeline
+stage, where the info and data are buffered if and only if the instruction was sent by PC.
+
+Default mode instructions aren't buffered since user of digital thermometer 
+is only interested in current temperature not temperature of some past time.  
+Thus default mode instructions immediately request transmission to PC 
+and if UART transmitter is unavailable the data is lost.
+
+Once buffered, the instructions are read asynchronously from buffer in 
+FIFO manner and if UART transmitter is available then 
+the data is passed onto next pipeline stage and buffer entry cleared out.
+
+If buffers become full, a control signal is asserted 
+that stops the I2C controller from processing any new instructions 
+and by extension, prevents the instruction from being accidentally 
+cleared out from the UART to I2C buffers.
+
+On PC side, the transmission packet is analyzed and the 
+results and details of the  instructions are displayed on
+the console.
 
 */
 
 
 
-module temp_sensor (input logic clk,reset,
-				   	input logic tx, //Data bit from PC UART transmitter
-				    input logic sample_tick, //Sample_tick from baud rate generator
-				    input logic[9:0] dvsr, //Adjust UART and I2C frequency using FPGA slide switches
-				    output logic[7:0] data_byte, //Data byte transmitted to UART.
-				    output logic[15:0] led_on,
-				    output tri scl, //SCL is I2C clock generated by I2C controller and SDA is I2C data line
-				    inout tri sda);
-				    
-				    logic time_out, buffers_full ;//If there is more than 10 seconds delay in typing in instructions or in case too many instructions are being sent.
-				    	    
-				    	    
-				    	    
-				    logic rx_done_tick;
-				    logic[7:0] received_byte_next,received_byte_reg;
-				    	   
-				    	    
-				    uart_rx uart_receiver(.*,
-				    	    			  .rx_done_tick(rx_done_tick),
+module temp_sensor(input logic clk,reset,
+				   input logic tx, //Data bit from PC over UART
+				   output logic rx, //Data bit transmitted to PC over UART.
+				  
+				   /*If UART to I2C controller instruction queue is full
+				   signal to user to stop sending instructions*/
+				   output logic[3:0] stop_typing, 
+				   /*If user delays for 10 seconds in typing out instruction
+				   signal to user to retype instruction in its entirety*/
+				   output logic[3:0] time_out,
+				   
+				   output tri scl, 
+				   inout tri sda);
+				  
+				   logic sample_tick; 	   
+				   baud_rate_generator baud_gen(.*);
+				   
+				   logic rx_done_tick_next,rx_done_tick;
+				   logic received_byte_next, received_byte;	    
+				   uart_rx uart_receiver(.*,
+				    	    			  .rx_done_tick(rx_done_tick_next),
 				    	    			  .received_byte(received_byte_next));
 				    	    
-				    	    logic valid;
-				    	    logic rx_done;
-				    	    
-				    	    logic waiting;
-				    	    
-				    	    //TIME_OUT AND TEMP SENSOR BUSY LED REGISTER
-				    	    always_ff @(posedge clk, posedge reset) 
-				    	    	if(reset) begin
-				    	    		led_on <= '0;
-				    	    	end
+				   //UART - UART-I2C BRIDGE INTERFACE REGISTER
+				   always_ff @(posedge clk, posedge reset)
+				        if(reset) begin
+				    	   rx_done_tick <= '0;
+				    	   received_byte <= '0;
+				    	end
 				    	    	
-				    	    	else begin
-				    	    		led_on[0] <= waiting;
-				    	    		led_on[7:1] <= (time_out) ? '1:'0;
-				    	    		led_on[15:8] <= (buffers_full) ? '1:'0;
-				    	    	end
-				    	    	
-				    	    //UART - UART-I2C BRIDGE INTERFACE REGISTER
-				    	    always_ff @(posedge clk, posedge reset)
-				    	    	if(reset) begin
-				    	    		rx_done <= '0;
-				    	    		received_byte_reg <= '0;
-				    	    	end
-				    	    	
-				    	    	else begin
-				    	    		rx_done <= rx_done_tick;
-				    	    		received_byte_reg <= received_byte_next;
-				    	    	end
+				    	else begin
+				    	   rx_done_tick <= rx_done_tick_next;
+				    	   received_byte <= received_byte_next;
+				    	end
 				    	
-				    	     /*Indicates availability of I2C controller for initiating another I2C transaction. 
-				    	     Controller becomes available as soon as it sends off acquired data to I2C-UART stage provided
-				    	     I2C-UART stage isn't stacked with previous requests awaiting transmission.
-				    	     */
-				    	     logic initiate, initiate_next;
-				    	     logic i2c_ready; 
-				    	     logic[2:0] mode, mode_next;
-				    	     logic[7:0] addr_pointer, addr_pointer_next;
-				    	     logic[15:0] wr_data, wr_data_next;
-				    	     
-				    	     logic wr_databuffer1, wr_databuffer2, wr_opbuffer,wr_addrbuffer;
-				    	     logic wr_databuffer1_next, wr_databuffer2_next, wr_opbuffer_next,wr_addrbuffer_next;
-				    	   
-				    	   //All 3 signals above are commands and data sent to i2c core.
-				    	     uart_i2c_tramsmitter uart_i2c_bridge(.*,
-				    	     										.time_out(time_out),
-				    	     										.buffers_full(buffers_full),
-				    	     										.waiting(waiting),
-				    	    										.initiate(initiate_next),
-				    	    										.received_byte(received_byte),
-				    	    										.rx_done_tick(rx_done),
-				    	    										.i2c_ready(i2c_ready),
-				    	    										.mode(mode_next),
-				    	    										.addr_pointer(addr_pointer_next),
-				    	    										.wr_data(wr_data_next),
-				    	    										.wr_addrbuffer(wr_addrbuffer_next),
-				    	    										.wr_databuffer1(wr_databuffer1_next),
-				    	    										.wr_databuffer2(wr_databuffer2_next),
-				    	    										.wr_opbuffer(wr_opbuffer_next));
+				   logic buffers_full; 
+				   logic[15:0] wr_data,wr_data_reg; 
+				   logic[7:0] mode,mode_reg; 
+				   logic initiate,initiate_reg; 
+				   logic stop_send;
+				   logic wr_addrbuffer,wr_opbuffer,wr_databuffer1;
+				   logic wr_databuffer2,wr_validbuffer;
+				   logic wr_addrbuffer_reg,wr_opbuffer_reg,wr_databuffer1_reg;
+				   logic wr_databuffer2_reg,wr_validbuffer_reg;  
+				   logic time_out; 
+				   logic[7:0] addr_pointer,addr_pointer_reg;
+
+				   //All 3 signals above are commands and data sent to i2c core.
+				   uart_i2c_tramsmitter uart_i2c_bridge(.*);
 				    	    	
 				    	    	
-				    	    	//UART-I2C TRANSMITTER TO I2C WAIT STAGE REGISTER
-				    	    	always_ff @(posedge clk,posedge reset)
-				    	    		if(reset) begin
-				    	    			wr_addrbuffer <= '0;
-				    	    			wr_databuffer1 <= '0;
-				    	    			wr_databuffer2 <= '0;
-				    	                        wr_opbuffer <= '0;
-				    	                        addr_pointer <= '0;
-				    	                        mode <= '0;
-				    	                        wr_data <= '0;
-				    	                        initiate <= '0;
-				    	                end
+				   //UART-I2C TRANSMITTER TO ARBITER INTERFACE REGISTER
+				   always_ff @(posedge clk,posedge reset)
+				        if(reset) begin
+				    	   wr_addrbuffer_reg <= '0;
+				    	   wr_databuffer1_reg <= '0;
+				    	   wr_databuffer2_reg <= '0;
+				    	   wr_opbuffer_reg <= '0;
+				    	   addr_pointer_reg <= '0;
+				    	   mode_reg <= '0;
+				    	   wr_data_reg <= '0;
+				    	   initiate_reg <= '0;
+				    	end
 				    	                
-				    	                else begin
-				    	                	wr_addrbuffer <= wr_addrbuffer_next;
-				    	                	wr_databuffer1 <= wr_databuffer1_next;
-				    	                	wr_databuffer2 <= wr_databuffer2_next;
-				    	                	wr_opbuffer <= wr_opbuffer_next;
-				    	                	addr_pointer <= addr_pointer_next;
-				    	                	wr_data <= wr_data_next;
-				    	                	mode <= mode_next;
-				    	                	initiate <= initiate_next;
-				    	                end
+				    	else begin
+				    	   wr_addrbuffer_reg <= wr_addrbuffer;
+				    	   wr_databuffer1_reg <= wr_databuffer1;
+				    	   wr_databuffer2_reg <= wr_databuffer2;
+				    	   wr_opbuffer_reg <= wr_opbuffer;
+				    	   addr_pointer_reg <= addr_pointer;
+				    	   wr_data_reg <= wr_data;
+				    	   mode_reg <= mode;
+				    	   initiate_reg <= initiate;
+				    	end
+				    	
+				   logic i2c_ready;
+				   logic[15:0] i2c_data;
+				   logic[7:0] i2c_address,i2c_mode;
+				   logic[1:0] valid_instr; 
+				   	
+				   uart_i2c_arbiter(.*,
+				                    .wr_data(wr_data_reg),
+				                    .wr_addrbuffer(wr_addrbuffer_reg),
+				                    .wr_databuffer1(wr_databuffer1_reg),
+				                    .wr_databuffer2(wr_databuffer2_reg),
+				                    .wr_opbuffer(wr_opbuffer_reg),
+				                    .initiate(initiate_reg),
+				                    .addr_pointer(addr_pointer_reg),
+				                    .mode(mode_reg));
 				    	                
-				    	                
-				    	        //Logic to determine what data is passed to I2C controller
-				    	    	//Signals on output of register remain the same unless we initiate a new write if not we initiate continous read operation.
-				    	    	logic[15:0] i2c_data;
-				    	    	logic[7:0] i2c_address;
-				    	    	logic[2:0] i2c_op;
-				    	    	logic[1:0] valid_instr; //Use lower bit as an initiate signal for i2c transaction and upper bit as indication of whether instruction is non-queried(0 for non-queried)
-				    	    	logic transmit_complete; //Has I2C data been transmitted to PC.
-				    	                
-				    	        uart_i2c_arbiter uart_to_i2c(.*,
-				    	        							.i2c_data(i2c_data),
-				    	        							.i2c_op(i2c_op),
-				    	        							.valid_instr(valid_instr),
-				    	        							.i2c_address(i2c_address),
-				    	        							.transmit_complete(transmit_complete),
-				    	        							.i2c_ready(i2c_ready),
-				    	        							.initiate(initiate),
-				    	        							.wr_addrbuffer(wr_addrbuffer),
-				    	        							.wr_databuffer1(wr_databuffer1),
-				    	        							.wr_databuffer2(wr_databuffer2),
-				    	        							.wr_opbuffer(wr_opbuffer),
-				    	        							.addr_pointer(addr_pointer),
-				    	        							.wr_data(wr_data),
-				    	        							.mode(mode));
-				    	        
-				    	        
-				    	                        
-				    	    			
-				    	    			
-				    	    	logic[15:0] i2c_rx_data_next, i2c_rx_data_reg;
-				    	    	logic i2c_data_rdy, i2c_data_rdy_next;
-				    	    	logic[3:0] fail_signals_next, fail_signals_reg;
-				    	    	logic default_mode_next, default_mode_reg;
-				    	    	logic i2c_ready_reg, i2c_ready_next;
-				    	    	logic full_i2c_databuffer;
-				    	    	i2cmaster i2ccontroller(.*,
-				    	    						       .full_i2cdatabuffer(full_i2cdatabuffer),
-				    	    						       .wr_data(i2c_data),
-				    	    						       .initiate(valid_instr[0]),
-				    	    						       .is_default_op(valid_instr[1]),
-				    	    						       .mode(i2c_op),
-				    	    						       .serialbusaddr(7'b1001000),
-				    	    						       .addrpointer(i2c_address),
-				    	    						       .received_data(i2c_rx_data_next),
-				    	    						       .ready(i2c_ready_next),
-				    	    						       .continous_mode_output(default_mode_next),
-				    	    						       .i2c_data_rdy(i2c_data_rdy_next),
-				    	    						       .failure_signal(fail_signals_next));
-				    	    	
-				    	    	
-				    	    	//Register in between I2C controller and I2C - UART ARBITER STAGE
-				    	    	always_ff @(posedge clk, posedge reset) 
-				    	    		if(reset) begin
-				    	    			i2c_rx_data_reg <= '0;
-				    	    			fail_signals_reg <= '0;
-				    	    			default_mode_reg <= '0;
-				    	    			i2c_ready_reg <= '0;
-				    	    			i2c_data_rdy <= '0;
-				    	    		end
+				   logic[3:0] fail_signals_next, fail_signals_reg;
+				   logic i2c_ready_reg, i2c_ready_next;
+				   logic full_i2cbuffer;
+				   
+				   logic master_free; //Indicates controller is ready to initiate communication
+				   logic[5:0] failure_signal, failure_signal_reg;//Indicates read/write failure
+				 
+				   /*Info for completed instruction to be passed onto next pipeline
+				   stage*/
+				   logic i2c_data_rdy, i2c_data_rdy_reg;
+				   logic[1:0] i2c_valid_instr, i2c_valid_instr_reg;
+				   logic[15:0] i2c_retrieved_data, i2c_retrieved_data_reg;
+				   logic[7:0] i2c_op_info, i2c_op_info_reg;
+				   logic[7:0] i2c_instr_address, i2c_instr_address_reg;
+				  
+				   i2cmaster i2ccontroller(.*,
+				    	    			   .full_i2cbuffer(full_i2cbuffer),
+				    	    			   .wr_data(i2c_data),
+				    	    			   .mode(i2c_mode),
+				    	    			   .reg_address(i2c_address),
+				    	    			   .serialbusaddr(7'b1001000),
+				    	    			   .dvsr(7'b0010101));
+	    	
+				   //Register in between I2C controller and I2C - UART ARBITER STAGE
+				   always_ff @(posedge clk, posedge reset) 
+				        if(reset) begin
+				    	   i2c_retrieved_data_reg <= '0;
+				    	   failure_signal_reg <= '0;
+				    	   i2c_instr_address_reg <= '0;
+				    	   i2c_op_info_reg <= '0;
+				    	   i2c_valid_instr_reg <= '0;
+				    	   i2c_data_rdy_reg <= '0;
+				    	end
 				    	    		
-				    	    		else begin
-				    	    			i2c_rx_data_reg <= i2c_rx_data_next;
-				    	    			fail_signals_reg <= fail_signals_next;
-				    	    			default_mode_reg <= default_mode_next;
-				    	    			i2c_ready_reg <= i2c_ready_next;
-				    	    			i2c_data_rdy <= i2c_data_rdy_next;
-				    	    		end
+				    	else begin
+				    	   i2c_retrieved_data_reg <= i2c_retrieved_data;
+				    	   failure_signal_reg <= failure_signal;
+				    	   i2c_data_rdy_reg <= i2c_data_rdy;
+				    	   i2c_valid_instr_reg <= i2c_valid_instr;
+				    	   i2c_instr_address_reg <= i2c_instr_address;
+				    	   i2c_op_info_reg <= i2c_op_info;
+				    	end
 				    	    		
-				    	    		
-				    	    	
-				    	    	//I2C-uart arbitrer. Determine whether UART transmission can take place depending on data info. Results asked for take priority.
-				    	    			
-				    	    			
-				
-				     	logic[15:0] toPC_data;
-				     	logic[7:0] toPC_address;
-				     	logic[7:0] toPC_mode;
-				     	logic data_rdy;
-				     
-				     	i2c_uart_arbiter i2c_to_uart (.*,
-				     								 .toPC_data(toPC_data),
-				     								 .toPC_address(toPC_address),
-				     								 .toPC_mode(toPC_mode),
-				     								 .data_ready(data_rdy), //Output signal that indicates whether data is ready for transmission
-				     								 .i2c_rx_data(i2c_rx_data_reg),
-				     								 .addr_pointer(addr_pointer_next),
-				     								 .mode(mode_next),
-				     								 .default_mode(default_mode_reg),
-				     								 .i2c_data_rdy(i2c_data_rdy),
-				     								 .transmit_complete(transmit_complete),
-				     								 .fail_signals(fail_signals_reg),
-				     								 .full_i2cdatabuffer(full_i2cdatabuffer));
-				     	
-				     	//i2c to uart arbiter has register for passing data to i2c-uart bridge built in. Thus we need only make direct connections
+				   //I2C-uart arbitrer. Determine whether UART transmission can take place depending on data info. Results asked for take priority.
+				   logic[15:0] toPC_data;
+				   logic[7:0] toPC_address;
+				   logic[7:0] toPC_mode;
+				   logic data_ready;
+				   logic tx_complete;
+				   
+				   i2c_uart_arbiter i2c_to_uart (.*, //Output signal that indicates whether data is ready for transmission
+				     							 .i2c_retrieved_data(i2c_retrieved_data_reg),
+				     							 .i2c_instr_address(i2c_instr_address_reg),
+				     							 .i2c_op_info(i2c_op_info_reg),
+				     							 .i2c_valid_instr(i2c_valid_instr_reg),
+				     							 .failure_signal(failure_signal_reg),
+				     							 .i2c_data_rdy(i2c_data_rdy_reg));
+				   //i2c to uart arbiter has register for passing data to i2c-uart bridge built in. Thus we need only make direct connections
 				     	
 				    	
-				    	logic[7:0] tx_byte, tx_byte_next;
-				    	logic tx_start, tx_start_next; //Get UART to start transmission 
-				    	logic tx_done_tick, tx_done_tick_next; //UART indication that it finished sending the byte
+				  logic[7:0] tx_byte, tx_byte_next;
+				  logic tx_start, tx_start_next; //Get UART to start transmission 
+				  logic tx_done_tick, tx_done_tick_next; //UART indication that it finished sending the byte
 				    	
-				    	//For your own sake have internal registers that store the necessary data bytes.
-				        i2c_uart_transmitter i2c_uart_bridge (.*,
-				    	    									  .data_ready(data_rdy),
-				    	    									  .tx_done_tick(tx_done_tick),
-				    	    									  .received_data(toPC_Data),
-				    	    									  .op_data(toPC_mode),
-				    	    									  .addr_pointer(toPC_address),
-				    	    									  .tx_start(tx_start_next),
-				    	    									  .data_byte(tx_byte_next),
-				    	    									  .transmit_complete(transmit_complete));
+				  //For your own sake have internal registers that store the necessary data bytes.
+				  i2c_uart_transmitter i2c_uart_bridge (.*,
+				    	    							.tx_start(tx_start_next),
+				    	    							.data_byte(tx_byte_next));
 				    	    									  
 				    	
-				    	//Intermediary register
-				    	always_ff @(posedge clk, posedge reset)
-				    		if(reset) begin
-				    			tx_byte <= '0;
-				    			tx_start <= '0;
-				    			tx_done_tick <= '0;
-				    		end
+				  //Intermediary register
+				  always_ff @(posedge clk, posedge reset)
+				        if(reset) begin
+				            tx_byte <= '0;
+				    	    tx_start <= '0;
+				    		tx_done_tick <= '0;
+				    	end
 				    		
-				    		else begin
-				    			tx_byte <= tx_byte_next;
-				    			tx_start <= tx_start_next;
-				    			tx_done_tick <= tx_done_tick_next;
-				    		end
+				    	else begin
+				    	   tx_byte <= tx_byte_next;
+				    	   tx_start <= tx_start_next;
+				    	   tx_done_tick <= tx_done_tick_next;
+				    	end
 				    		
 				    	
-				    	uart_tx uart_transmitter(.*,
-				    							 .data_byte(tx_byte),
-				    							 .tx_start(tx_start),
-				    							 .tx_done_tick(tx_done_tick_next));
+				  uart_tx uart_transmitter(.*,
+				    					   .data_byte(tx_byte),
+				    					   .tx_start(tx_start),
+				    					   .tx_done_tick(tx_done_tick_next));
 				    							 
 				    	
 endmodule  

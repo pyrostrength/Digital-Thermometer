@@ -16,10 +16,10 @@ module uart_i2c_arbiter(input logic clk,reset,
 						input logic initiate,//Control signal to write valid buffer
 				    	input logic[7:0] addr_pointer,//Register address in temp sensor
 				    	input logic[15:0] wr_data,//Data to be written to register
-				    	input logic[2:0] mode,//Mode of operation
+				    	input logic[7:0] mode,//Mode of operation
 				    	output logic[15:0] i2c_data,//Data to be written to register
 				    	output logic[7:0] i2c_address,//Address of register to which operation is directed
-				    	output logic[2:0] i2c_mode, //Read/write indication
+				    	output logic[7:0] i2c_mode, //Read/write indication
 				    	output logic[1:0] valid_instr, //Indicates validity of issued instruction.
 				    	output logic buffers_full); //Indicates when instruction queue is full
 				    	          
@@ -41,7 +41,7 @@ module uart_i2c_arbiter(input logic clk,reset,
 				    	    								 .write(wr_addrbuffer),
 				    	    								 .read(buffer_read));
 				    	    										
-					    fifo_buffer #(.DW(2)) operation_buffer(.*,
+					    fifo_buffer #(.DW(7)) operation_buffer(.*,
 					    									   .wr_data(mode),
 					    									   .rd_data(fifo_mode),
 					    									   .full(full_opbuffer),

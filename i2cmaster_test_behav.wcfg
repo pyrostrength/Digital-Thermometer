@@ -3,111 +3,33 @@
    <wave_state>
    </wave_state>
    <db_ref_list>
-      <db_ref path="uart_i2c_arbiter_tb_behav.wdb" id="1">
+      <db_ref path="baudgen_tb_behav.wdb" id="1">
          <top_modules>
+            <top_module name="baudgen_tb" />
             <top_module name="glbl" />
-            <top_module name="uart_i2c_arbiter_tb" />
          </top_modules>
       </db_ref>
    </db_ref_list>
    <zoom_setting>
       <ZoomStartTime time="0.000 ns"></ZoomStartTime>
-      <ZoomEndTime time="300.001 ns"></ZoomEndTime>
-      <Cursor1Time time="180.755 ns"></Cursor1Time>
+      <ZoomEndTime time="100.001 ns"></ZoomEndTime>
+      <Cursor1Time time="75.000 ns"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="110"></NameColumnWidth>
       <ValueColumnWidth column_width="106"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="21" />
-   <wvobject type="logic" fp_name="/uart_i2c_arbiter_tb/clk">
+   <WVObjectSize size="3" />
+   <wvobject type="logic" fp_name="/baudgen_tb/baudgen/clk">
       <obj_property name="ElementShortName">clk</obj_property>
       <obj_property name="ObjectShortName">clk</obj_property>
    </wvobject>
-   <wvobject type="logic" fp_name="/uart_i2c_arbiter_tb/reset">
+   <wvobject type="logic" fp_name="/baudgen_tb/baudgen/reset">
       <obj_property name="ElementShortName">reset</obj_property>
       <obj_property name="ObjectShortName">reset</obj_property>
    </wvobject>
-   <wvobject type="logic" fp_name="/uart_i2c_arbiter_tb/i2c_ready">
-      <obj_property name="ElementShortName">i2c_ready</obj_property>
-      <obj_property name="ObjectShortName">i2c_ready</obj_property>
-   </wvobject>
-   <wvobject type="logic" fp_name="/uart_i2c_arbiter_tb/wr_addrbuffer">
-      <obj_property name="ElementShortName">wr_addrbuffer</obj_property>
-      <obj_property name="ObjectShortName">wr_addrbuffer</obj_property>
-   </wvobject>
-   <wvobject type="logic" fp_name="/uart_i2c_arbiter_tb/wr_databuffer1">
-      <obj_property name="ElementShortName">wr_databuffer1</obj_property>
-      <obj_property name="ObjectShortName">wr_databuffer1</obj_property>
-   </wvobject>
-   <wvobject type="logic" fp_name="/uart_i2c_arbiter_tb/wr_databuffer2">
-      <obj_property name="ElementShortName">wr_databuffer2</obj_property>
-      <obj_property name="ObjectShortName">wr_databuffer2</obj_property>
-   </wvobject>
-   <wvobject type="logic" fp_name="/uart_i2c_arbiter_tb/wr_opbuffer">
-      <obj_property name="ElementShortName">wr_opbuffer</obj_property>
-      <obj_property name="ObjectShortName">wr_opbuffer</obj_property>
-   </wvobject>
-   <wvobject type="logic" fp_name="/uart_i2c_arbiter_tb/initiate">
-      <obj_property name="ElementShortName">initiate</obj_property>
-      <obj_property name="ObjectShortName">initiate</obj_property>
-   </wvobject>
-   <wvobject type="array" fp_name="/uart_i2c_arbiter_tb/addr_pointer">
-      <obj_property name="ElementShortName">addr_pointer[7:0]</obj_property>
-      <obj_property name="ObjectShortName">addr_pointer[7:0]</obj_property>
-      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-   </wvobject>
-   <wvobject type="array" fp_name="/uart_i2c_arbiter_tb/wr_data">
-      <obj_property name="ElementShortName">wr_data[15:0]</obj_property>
-      <obj_property name="ObjectShortName">wr_data[15:0]</obj_property>
-      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-   </wvobject>
-   <wvobject type="array" fp_name="/uart_i2c_arbiter_tb/mode">
-      <obj_property name="ElementShortName">mode[2:0]</obj_property>
-      <obj_property name="ObjectShortName">mode[2:0]</obj_property>
-   </wvobject>
-   <wvobject type="logic" fp_name="/uart_i2c_arbiter_tb/buffers_full">
-      <obj_property name="ElementShortName">buffers_full</obj_property>
-      <obj_property name="ObjectShortName">buffers_full</obj_property>
-   </wvobject>
-   <wvobject type="array" fp_name="/uart_i2c_arbiter_tb/arbiter/address_buffer/mem_array">
-      <obj_property name="ElementShortName">mem_array[15:0][7:0]</obj_property>
-      <obj_property name="ObjectShortName">mem_array[15:0][7:0]</obj_property>
-      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-   </wvobject>
-   <wvobject type="array" fp_name="/uart_i2c_arbiter_tb/arbiter/address_buffer/wr_ptr">
-      <obj_property name="ElementShortName">wr_ptr[4:0]</obj_property>
-      <obj_property name="ObjectShortName">wr_ptr[4:0]</obj_property>
-      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-   </wvobject>
-   <wvobject type="logic" fp_name="/uart_i2c_arbiter_tb/arbiter/address_buffer/full">
-      <obj_property name="ElementShortName">full</obj_property>
-      <obj_property name="ObjectShortName">full</obj_property>
-   </wvobject>
-   <wvobject type="logic" fp_name="/uart_i2c_arbiter_tb/arbiter/address_buffer/empty">
-      <obj_property name="ElementShortName">empty</obj_property>
-      <obj_property name="ObjectShortName">empty</obj_property>
-   </wvobject>
-   <wvobject type="logic" fp_name="/uart_i2c_arbiter_tb/arbiter/address_buffer/read">
-      <obj_property name="ElementShortName">read</obj_property>
-      <obj_property name="ObjectShortName">read</obj_property>
-   </wvobject>
-   <wvobject type="array" fp_name="/uart_i2c_arbiter_tb/i2c_data">
-      <obj_property name="ElementShortName">i2c_data[15:0]</obj_property>
-      <obj_property name="ObjectShortName">i2c_data[15:0]</obj_property>
-      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-   </wvobject>
-   <wvobject type="array" fp_name="/uart_i2c_arbiter_tb/i2c_address">
-      <obj_property name="ElementShortName">i2c_address[7:0]</obj_property>
-      <obj_property name="ObjectShortName">i2c_address[7:0]</obj_property>
-      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-   </wvobject>
-   <wvobject type="array" fp_name="/uart_i2c_arbiter_tb/i2c_mode">
-      <obj_property name="ElementShortName">i2c_mode[2:0]</obj_property>
-      <obj_property name="ObjectShortName">i2c_mode[2:0]</obj_property>
-   </wvobject>
-   <wvobject type="array" fp_name="/uart_i2c_arbiter_tb/valid_instr">
-      <obj_property name="ElementShortName">valid_instr[1:0]</obj_property>
-      <obj_property name="ObjectShortName">valid_instr[1:0]</obj_property>
+   <wvobject type="logic" fp_name="/baudgen_tb/baudgen/sample_tick">
+      <obj_property name="ElementShortName">sample_tick</obj_property>
+      <obj_property name="ObjectShortName">sample_tick</obj_property>
    </wvobject>
 </wave_config>

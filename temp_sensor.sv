@@ -88,7 +88,7 @@ module temp_sensor(input logic clk,reset,
 				    	    			  .received_byte(received_byte_next));
 				    	    
 				   //UART - UART-I2C BRIDGE INTERFACE REGISTER
-				   always_ff @(posedge clk, posedge reset)
+				   always_ff @(posedge clk)
 				        if(reset) begin
 				    	   rx_done_tick <= '0;
 				    	   received_byte <= '0;
@@ -102,11 +102,10 @@ module temp_sensor(input logic clk,reset,
 				   logic buffers_full; 
 				   logic[15:0] wr_data,wr_data_reg; 
 				   logic[7:0] mode,mode_reg; 
-				   logic stop_send;
 				   logic wr_addrbuffer,wr_opbuffer,wr_databuffer1;
-				   logic wr_databuffer2,wr_validbuffer;
+				   logic wr_databuffer2;
 				   logic wr_addrbuffer_reg,wr_opbuffer_reg,wr_databuffer1_reg;
-				   logic wr_databuffer2_reg,wr_validbuffer_reg;  
+				   logic wr_databuffer2_reg;  
 				   logic[7:0] addr_pointer,addr_pointer_reg;
 
                    logic times_up;
@@ -118,7 +117,7 @@ module temp_sensor(input logic clk,reset,
 				   /*Led flasher when instruction queue is full*/
 				   led_flasher #(.SYS_FREQ(100000000),.PERIOD(20))
 				                   interrupt_mod1(.*,
-				                                  .control(stop_send),
+				                                  .control(buffers_full),
 				                                  .led_on(stop_typing));
 				   
 				    	    	
@@ -130,7 +129,7 @@ module temp_sensor(input logic clk,reset,
 				                                  .led_on(time_out));
 				   	    	
 				   //UART-I2C TRANSMITTER TO ARBITER INTERFACE REGISTER
-				   always_ff @(posedge clk,posedge reset)
+				   always_ff @(posedge clk)
 				        if(reset) begin
 				    	   wr_addrbuffer_reg <= '0;
 				    	   wr_databuffer1_reg <= '0;
@@ -191,7 +190,7 @@ module temp_sensor(input logic clk,reset,
 				    	    			   .dvsr(7'b0010101));
 	    	
 				   //Register in between I2C controller and I2C - UART ARBITER STAGE
-				   always_ff @(posedge clk, posedge reset) 
+				   always_ff @(posedge clk) 
 				        if(reset) begin
 				    	   i2c_retrieved_data_reg <= '0;
 				    	   failure_signal_reg <= '0;
@@ -238,7 +237,7 @@ module temp_sensor(input logic clk,reset,
 				    	    									  
 				    	
 				  //Intermediary register
-				  always_ff @(posedge clk, posedge reset)
+				  always_ff @(posedge clk)
 				        if(reset) begin
 				            tx_byte <= '0;
 				    	    tx_start <= '0;

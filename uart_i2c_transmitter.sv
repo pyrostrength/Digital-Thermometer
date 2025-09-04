@@ -31,8 +31,7 @@ module uart_i2c_tramsmitter(input logic clk,reset,
 							input logic buffers_full, //if buffers are full we cannot queue the instruction. User must wait then repeat the instruction on PC end
 							output logic[15:0] wr_data, //Data to be written to I2C temperature sensor's registers.
 							output logic[7:0] mode, // Read 1 byte/2 bytes or write 1 byte or 2 bytes
-							output logic stop_send, //Instructs user to not send an instruction
-							output logic wr_addrbuffer,wr_opbuffer,wr_databuffer1,wr_databuffer2,wr_validbuffer, //Queue instruction information in their respective buffers
+							output logic wr_addrbuffer,wr_opbuffer,wr_databuffer1,wr_databuffer2, //Queue instruction information in their respective buffers
 							output logic time_out, //Repeat the entire instruction if user delays more than 10 seconds in completely specifying their wants.
 							output logic[7:0] addr_pointer); //Register on I2C temperature sensor to which operation is addressed.
 							
@@ -42,16 +41,18 @@ module uart_i2c_tramsmitter(input logic clk,reset,
                             localparam int MAX = SYS_FREQ * PERIOD;
                             logic[31:0] max_count;
                             
+                            assign max_count = MAX;
+                            
 							typedef enum{idle,address,operation,data1,data2,stop} state_type;
 							    
 							state_type state, state_next;
-							logic[32:0] count,count_next;  //Time-out timer counter
+							logic[31:0] count,count_next;  //Time-out timer counter
 							logic[15:0] data_reg, data_next; //Holds data byte to be written to temp sensors registers by I2C controller
 							logic[7:0] mode_reg, mode_next; //Holds operation to be performed by I2C controller
 							logic[7:0] addr_reg, addr_next; //Holds address of register to be written to or read from. */
     
 							//Timeout counter - if 10 seconds elapses without any input from PC then instruction is deleted
-							always_ff @(posedge clk,posedge reset) begin
+							always_ff @(posedge clk) begin
 							     if(reset) begin
 							         count <= '0;
 							     end
@@ -61,7 +62,7 @@ module uart_i2c_tramsmitter(input logic clk,reset,
 							     end
 							end
 							    
-							always_ff @(posedge clk,posedge reset)
+							always_ff @(posedge clk)
 							     if(reset) begin
 							         state <= idle;
 							    	 data_reg <= '0;
@@ -78,18 +79,17 @@ module uart_i2c_tramsmitter(input logic clk,reset,
 							
 							
 							assign mode = mode_reg;
-							assign addrpointer = addr_reg;
+							assign addr_pointer = addr_reg;
 							assign wr_data = data_reg;
 							
 							always_comb begin
 								state_next = state;
-								stop_send = '0;
 								data_next = data_reg;
 							    mode_next = mode_reg;
 							    addr_next = addr_reg; 
 							    time_out = '0;
 							    count_next = count + 1;
-							    {wr_addrbuffer, wr_opbuffer, wr_databuffer1, wr_databuffer2,wr_validbuffer}= '0;
+							    {wr_addrbuffer, wr_opbuffer, wr_databuffer1, wr_databuffer2}= '0;
 							    	
 							    case(state) 
 							    /*Await for new instructions from PC. Before transmitting the 
@@ -97,10 +97,11 @@ module uart_i2c_tramsmitter(input logic clk,reset,
 							    If full we signal that the user should repeat the transaction 
 							    */
 							         idle: begin
-							    	    stop_send = (buffers_full); //Signal to user to stop sending instructions
-							    		if(rx_done_tick && !buffers_full) begin
-							    		   state_next = (received_byte == '1) ? address : idle ; //Receiving start byte is necessary to initiate transaction. 
-							    		   count_next = '0; //Reset timeout counter.
+							            /*Counter shouldn't be running in idle state
+							            as no communication has began*/
+							            count_next = '0;
+							    		if(rx_done_tick && !buffers_full && (received_byte == '1)) begin
+							    		   state_next = address ; //Receiving start byte is necessary to initiate transaction. 
 							    		end
 							    	 end
 							    		
@@ -146,7 +147,8 @@ module uart_i2c_tramsmitter(input logic clk,reset,
 							    	data1: begin
 							    	    if(rx_done_tick) begin
 							    		   data_next[7:0] = received_byte;
-							    		   state_next = (mode_reg == 3'b011) ? data2 : stop;
+							    		   /*If writing 2 bytes we proceed to obtaining next bytes*/
+							    		   state_next = (mode_reg[3:0] == 4'b1000) ? data2 : stop;
 							    		   count_next = '0;
 							    		end
 							    			
@@ -179,7 +181,6 @@ module uart_i2c_tramsmitter(input logic clk,reset,
 							    		   if(received_byte == '1) begin
 							    		       /*We only write to instruction queue 
 							    		       when transmission is completed. And */
-							    		       wr_validbuffer = 1'b1;
 							    		       wr_addrbuffer = 1'b1;
 							    		       wr_databuffer2 = 1'b1;
 							    		       wr_databuffer1 = 1'b1;

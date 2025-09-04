@@ -23,7 +23,7 @@ module baud_rate_generator(input logic clk,reset,
 						   logic[SIZE:0] count,count_next;
 						   logic[SIZE:0] dvsr = DVSR;
 						   
-						   always_ff @(posedge clk, posedge reset) 
+						   always_ff @(posedge clk) 
 						      if(reset) begin
 							     count <= '0;
 							  end

@@ -112,7 +112,7 @@ module uart_i2c_arbiter(input logic clk,reset,
 				    	end
 				    	    	
 				    	//Register in between uart-i2c buffer and i2c controller that passes data to UART controller
-				    	always_ff @(posedge clk, posedge reset) 
+				    	always_ff @(posedge clk) 
 				    	   if(reset) begin 
 				    	       i2c_data <= '0;
 				    	       i2c_mode <= '0; 

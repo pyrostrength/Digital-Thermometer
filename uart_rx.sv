@@ -20,7 +20,7 @@ module uart_rx (input logic clk,reset,
 				logic[7:0] rx_reg, rx_next; //Shift register to hold in received data bits
 				logic[2:0]  bit_count, bit_count_next; //Count the number of data bits received
 				
-				always_ff @(posedge clk, posedge reset)
+				always_ff @(posedge clk)
 					if(reset) begin
 						tick <= '0;
 						rx_reg <= '0;

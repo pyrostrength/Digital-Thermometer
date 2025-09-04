@@ -30,7 +30,7 @@ module led_flasher    (input logic clk,reset,
                        
                        logic[31:0] count, count_next;
                        
-                       always_ff @(posedge reset,posedge clk)
+                       always_ff @(posedge clk)
                             if(reset) begin
                                 count <= '0;
                                 state <= idle;

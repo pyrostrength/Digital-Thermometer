@@ -22,7 +22,7 @@ module uart_tx (input logic clk,reset,
 				logic[7:0] tx_reg, tx_next; //Holds data to be transmitted
 				logic[2:0]  bit_count, bit_count_next; //Counts the number of data bits passed
 				
-				always_ff @(posedge clk, posedge reset)
+				always_ff @(posedge clk)
 					if(reset) begin
 						tick <= '0;
 						/*Since l.s.bit of tx_reg is the data bit to be transmitted

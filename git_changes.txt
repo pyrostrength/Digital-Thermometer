@@ -1,0 +1,12 @@
+GIT CHANGES
+09/01/2025
+Shortened the combinational path for signalling full instruction queues at system level. Initially the full buffer signal would be routed to uart-transmitter-bridge then reproduced as
+another signal that was then sent to the LED flasher module.
+
+Verified the I2C Uart bridge module. Figured out how to run assert statements and random functions in testbench.
+
+Finished writing the UART transmitter testbench
+
+Fully verified the UART to I2C transmitter module and the I2C to UART transmitter module. 
+
+Tasks left: Verify I2C controller;

@@ -3,33 +3,65 @@
    <wave_state>
    </wave_state>
    <db_ref_list>
-      <db_ref path="baudgen_tb_behav.wdb" id="1">
+      <db_ref path="i2c_uart_transmitter_tb_behav.wdb" id="1">
          <top_modules>
-            <top_module name="baudgen_tb" />
             <top_module name="glbl" />
+            <top_module name="i2c_uart_transmitter_tb" />
          </top_modules>
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="0.000 ns"></ZoomStartTime>
-      <ZoomEndTime time="100.001 ns"></ZoomEndTime>
-      <Cursor1Time time="75.000 ns"></Cursor1Time>
+      <ZoomStartTime time="2.934 ns"></ZoomStartTime>
+      <ZoomEndTime time="225.335 ns"></ZoomEndTime>
+      <Cursor1Time time="20.000 ns"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="110"></NameColumnWidth>
       <ValueColumnWidth column_width="106"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="3" />
-   <wvobject type="logic" fp_name="/baudgen_tb/baudgen/clk">
+   <WVObjectSize size="11" />
+   <wvobject type="logic" fp_name="/i2c_uart_transmitter_tb/clk">
       <obj_property name="ElementShortName">clk</obj_property>
       <obj_property name="ObjectShortName">clk</obj_property>
    </wvobject>
-   <wvobject type="logic" fp_name="/baudgen_tb/baudgen/reset">
+   <wvobject type="logic" fp_name="/i2c_uart_transmitter_tb/reset">
       <obj_property name="ElementShortName">reset</obj_property>
       <obj_property name="ObjectShortName">reset</obj_property>
    </wvobject>
-   <wvobject type="logic" fp_name="/baudgen_tb/baudgen/sample_tick">
-      <obj_property name="ElementShortName">sample_tick</obj_property>
-      <obj_property name="ObjectShortName">sample_tick</obj_property>
+   <wvobject type="logic" fp_name="/i2c_uart_transmitter_tb/data_ready">
+      <obj_property name="ElementShortName">data_ready</obj_property>
+      <obj_property name="ObjectShortName">data_ready</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/i2c_uart_transmitter_tb/tx_done_tick">
+      <obj_property name="ElementShortName">tx_done_tick</obj_property>
+      <obj_property name="ObjectShortName">tx_done_tick</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/i2c_uart_transmitter_tb/toPC_data">
+      <obj_property name="ElementShortName">toPC_data[15:0]</obj_property>
+      <obj_property name="ObjectShortName">toPC_data[15:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/i2c_uart_transmitter_tb/toPC_mode">
+      <obj_property name="ElementShortName">toPC_mode[7:0]</obj_property>
+      <obj_property name="ObjectShortName">toPC_mode[7:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/i2c_uart_transmitter_tb/toPC_address">
+      <obj_property name="ElementShortName">toPC_address[7:0]</obj_property>
+      <obj_property name="ObjectShortName">toPC_address[7:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/i2c_uart_transmitter_tb/tx_start">
+      <obj_property name="ElementShortName">tx_start</obj_property>
+      <obj_property name="ObjectShortName">tx_start</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/i2c_uart_transmitter_tb/data_byte">
+      <obj_property name="ElementShortName">data_byte[7:0]</obj_property>
+      <obj_property name="ObjectShortName">data_byte[7:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/i2c_uart_transmitter_tb/tx_complete">
+      <obj_property name="ElementShortName">tx_complete</obj_property>
+      <obj_property name="ObjectShortName">tx_complete</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/i2c_uart_transmitter_tb/bridge/state">
+      <obj_property name="ElementShortName">state[31:0]</obj_property>
+      <obj_property name="ObjectShortName">state[31:0]</obj_property>
    </wvobject>
 </wave_config>

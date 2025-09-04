@@ -27,7 +27,7 @@ module i2c_uart_transmitter(input logic clk,reset,
 							logic[7:0] PC_address_reg,PC_address_next;
 							logic[7:0] PC_mode_reg,PC_mode_next;
 							
-							always_ff @(posedge clk, posedge reset) 
+							always_ff @(posedge clk) 
 						      if(reset) begin
 							     state <= idle;
 							     PC_data_reg <= '0;
@@ -50,6 +50,7 @@ module i2c_uart_transmitter(input logic clk,reset,
 							  PC_address_next = PC_address_reg;
 							  PC_mode_next = PC_mode_reg;
 							  PC_data_next = PC_data_reg;
+							  tx_complete = '0;
 								
 							  case(state)
 							     idle:begin
@@ -123,7 +124,7 @@ module i2c_uart_transmitter(input logic clk,reset,
 								 stop:begin
 								    data_byte = '1;
 								    if(tx_done_tick) begin
-									   tx_start = 1'b0;
+									   tx_start = 1'b1;
 									   state_next = idle;
 									   data_byte = '0;
 									   tx_complete = 1'b1; //We signal to arbiter stage that we can take up a new instruction.

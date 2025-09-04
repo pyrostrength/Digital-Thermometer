@@ -27,7 +27,7 @@ module fifo_buffer#(parameter DW = 7, SIZE = 15)
                     */                
                     
                                      
-                    always_ff @(posedge clk,posedge reset)
+                    always_ff @(posedge clk)
                         if(reset) begin
                             rd_ptr <= '0;
                             wr_ptr <= '0;

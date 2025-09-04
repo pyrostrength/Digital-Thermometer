@@ -122,7 +122,7 @@ module i2cmaster(input logic clk,reset,
 				 assign failure_signal = {sba_send_fail, address_send_fail, write_byte1_fail, write_byte2_fail, read_byte1_fail, read_byte2_fail};
 				 
 				  	
-				 always_ff @(posedge clk,posedge reset) begin
+				 always_ff @(posedge clk) begin
 				    if(reset) begin
 				        state <= idle;
 				        sda_reg <= '1;

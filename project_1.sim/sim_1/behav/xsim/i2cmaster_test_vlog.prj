@@ -1,0 +1,30 @@
+# compile verilog/system verilog design source files
+sv xil_defaultlib  \
+"../../../../baud_rate_generator.sv" \
+"../../../../fifo_buffer.sv" \
+"../../../../i2c_uart_arbiter.sv" \
+"../../../../i2c_uart_transmitter.sv" \
+"../../../../i2cmaster.sv" \
+"../../../../led_flasher.sv" \
+"../../../../uart_i2c_arbiter.sv" \
+"../../../../uart_i2c_transmitter.sv" \
+"../../../../uart_rx.sv" \
+"../../../../uart_tx.sv" \
+"../../../../temp_sensor.sv" \
+"../../../../fifo_validbuffer.sv" \
+"../../../../baudgen_tb.sv" \
+"../../../../fifo_tb.sv" \
+"../../../../fifovalid_tb.sv" \
+"../../../../i2c_uart_arbiter_tb.sv" \
+"../../../../i2c_uart_transmitter_tb.sv" \
+"../../../../uart_i2c_arbiter_tb.sv" \
+"../../../../uart_i2c_transmitter_tb.sv" \
+"../../../../uart_rx_tb.sv" \
+"../../../../uart_tx_tb.sv" \
+"../../../../i2cmaster_test.sv" \
+
+# compile glbl module
+verilog xil_defaultlib "glbl.v"
+
+# Do not sort compile order
+nosort

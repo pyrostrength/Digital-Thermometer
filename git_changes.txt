@@ -10,3 +10,9 @@ Finished writing the UART transmitter testbench
 Fully verified the UART to I2C transmitter module and the I2C to UART transmitter module. 
 
 Tasks left: Verify I2C controller;
+
+
+09/05/2025
+- We have 2 cycles necessary for relevant data to appear on SDA line. First part is setup by left shifing on write register. Then passing the most significant bit through
+another register before SDA appears on output. Instead we have the relevant SDA bit be either the most significant bit of write register or high impedance and just
+route through a multiplexor(remove the intermediary register);

@@ -170,7 +170,7 @@ module temp_sensor(input logic clk,reset,
 				   logic full_i2cbuffer;
 				   
 				   logic master_free; //Indicates controller is ready to initiate communication
-				   logic[5:0] failure_signal, failure_signal_reg;//Indicates read/write failure
+				   logic[6:0] failure_signal, failure_signal_reg;//Indicates read/write failure
 				 
 				   /*Info for completed instruction to be passed onto next pipeline
 				   stage*/
@@ -179,6 +179,10 @@ module temp_sensor(input logic clk,reset,
 				   logic[15:0] i2c_retrieved_data, i2c_retrieved_data_reg;
 				   logic[7:0] i2c_op_info, i2c_op_info_reg;
 				   logic[7:0] i2c_instr_address, i2c_instr_address_reg;
+				   
+				   /*model of pullup resistor on sda line.
+				   required for proper simulation*/
+	               assign (pull1,strong0) sda = 1'b1;
 				  
 				   i2cmaster #(.SYS_CLK_FREQ(100000000),.SCL_FREQ(200000))
 				             i2ccontroller(.*,

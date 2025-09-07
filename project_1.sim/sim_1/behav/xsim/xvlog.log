@@ -1,4 +1,44 @@
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/voidknight/DigitalTherm/baud_rate_generator.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module baud_rate_generator
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/voidknight/DigitalTherm/fifo_buffer.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module fifo_buffer
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/voidknight/DigitalTherm/i2c_uart_arbiter.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module i2c_uart_arbiter
 INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/voidknight/DigitalTherm/i2c_uart_transmitter.sv" into library xil_defaultlib
 INFO: [VRFC 10-311] analyzing module i2c_uart_transmitter
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/voidknight/DigitalTherm/i2cmaster.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module i2cmaster
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/voidknight/DigitalTherm/led_flasher.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module led_flasher
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/voidknight/DigitalTherm/uart_i2c_arbiter.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module uart_i2c_arbiter
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/voidknight/DigitalTherm/uart_i2c_transmitter.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module uart_i2c_tramsmitter
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/voidknight/DigitalTherm/uart_rx.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module uart_rx
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/voidknight/DigitalTherm/uart_tx.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module uart_tx
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/voidknight/DigitalTherm/temp_sensor.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module temp_sensor
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/voidknight/DigitalTherm/fifo_validbuffer.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module fifo_validbuffer
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/voidknight/DigitalTherm/baudgen_tb.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module baudgen_tb
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/voidknight/DigitalTherm/fifo_tb.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module fifo_tb
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/voidknight/DigitalTherm/fifovalid_tb.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module fifovalid_tb
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/voidknight/DigitalTherm/i2c_uart_arbiter_tb.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module i2c_uart_arbiter_tb
 INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/voidknight/DigitalTherm/i2c_uart_transmitter_tb.sv" into library xil_defaultlib
 INFO: [VRFC 10-311] analyzing module i2c_uart_transmitter_tb
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/voidknight/DigitalTherm/uart_i2c_arbiter_tb.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module uart_i2c_arbiter_tb
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/voidknight/DigitalTherm/uart_i2c_transmitter_tb.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module uart_i2c_transmitter_tb
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/voidknight/DigitalTherm/uart_rx_tb.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module uart_rx_tb
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/voidknight/DigitalTherm/uart_tx_tb.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module uart_tx_tb
+INFO: [VRFC 10-2263] Analyzing SystemVerilog file "/home/voidknight/DigitalTherm/i2cmaster_test.sv" into library xil_defaultlib
+INFO: [VRFC 10-311] analyzing module i2cmaster_test

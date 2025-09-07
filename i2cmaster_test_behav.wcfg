@@ -3,65 +3,99 @@
    <wave_state>
    </wave_state>
    <db_ref_list>
-      <db_ref path="i2c_uart_transmitter_tb_behav.wdb" id="1">
+      <db_ref path="i2cmaster_test_behav.wdb" id="1">
          <top_modules>
             <top_module name="glbl" />
-            <top_module name="i2c_uart_transmitter_tb" />
+            <top_module name="i2cmaster_test" />
          </top_modules>
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="2.934 ns"></ZoomStartTime>
-      <ZoomEndTime time="225.335 ns"></ZoomEndTime>
-      <Cursor1Time time="20.000 ns"></Cursor1Time>
+      <ZoomStartTime time="14,796.666 ns"></ZoomStartTime>
+      <ZoomEndTime time="15,796.667 ns"></ZoomEndTime>
+      <Cursor1Time time="15,630.000 ns"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="110"></NameColumnWidth>
       <ValueColumnWidth column_width="106"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="11" />
-   <wvobject type="logic" fp_name="/i2c_uart_transmitter_tb/clk">
+   <WVObjectSize size="19" />
+   <wvobject type="logic" fp_name="/i2cmaster_test/controller/clk">
       <obj_property name="ElementShortName">clk</obj_property>
       <obj_property name="ObjectShortName">clk</obj_property>
    </wvobject>
-   <wvobject type="logic" fp_name="/i2c_uart_transmitter_tb/reset">
+   <wvobject type="logic" fp_name="/i2cmaster_test/controller/reset">
       <obj_property name="ElementShortName">reset</obj_property>
       <obj_property name="ObjectShortName">reset</obj_property>
    </wvobject>
-   <wvobject type="logic" fp_name="/i2c_uart_transmitter_tb/data_ready">
-      <obj_property name="ElementShortName">data_ready</obj_property>
-      <obj_property name="ObjectShortName">data_ready</obj_property>
+   <wvobject type="array" fp_name="/i2cmaster_test/controller/wr_data">
+      <obj_property name="ElementShortName">wr_data[15:0]</obj_property>
+      <obj_property name="ObjectShortName">wr_data[15:0]</obj_property>
    </wvobject>
-   <wvobject type="logic" fp_name="/i2c_uart_transmitter_tb/tx_done_tick">
-      <obj_property name="ElementShortName">tx_done_tick</obj_property>
-      <obj_property name="ObjectShortName">tx_done_tick</obj_property>
+   <wvobject type="logic" fp_name="/i2cmaster_test/controller/full_i2cbuffer">
+      <obj_property name="ElementShortName">full_i2cbuffer</obj_property>
+      <obj_property name="ObjectShortName">full_i2cbuffer</obj_property>
    </wvobject>
-   <wvobject type="array" fp_name="/i2c_uart_transmitter_tb/toPC_data">
-      <obj_property name="ElementShortName">toPC_data[15:0]</obj_property>
-      <obj_property name="ObjectShortName">toPC_data[15:0]</obj_property>
+   <wvobject type="array" fp_name="/i2cmaster_test/controller/mode">
+      <obj_property name="ElementShortName">mode[7:0]</obj_property>
+      <obj_property name="ObjectShortName">mode[7:0]</obj_property>
    </wvobject>
-   <wvobject type="array" fp_name="/i2c_uart_transmitter_tb/toPC_mode">
-      <obj_property name="ElementShortName">toPC_mode[7:0]</obj_property>
-      <obj_property name="ObjectShortName">toPC_mode[7:0]</obj_property>
+   <wvobject type="array" fp_name="/i2cmaster_test/controller/valid_instr">
+      <obj_property name="ElementShortName">valid_instr[1:0]</obj_property>
+      <obj_property name="ObjectShortName">valid_instr[1:0]</obj_property>
    </wvobject>
-   <wvobject type="array" fp_name="/i2c_uart_transmitter_tb/toPC_address">
-      <obj_property name="ElementShortName">toPC_address[7:0]</obj_property>
-      <obj_property name="ObjectShortName">toPC_address[7:0]</obj_property>
+   <wvobject type="array" fp_name="/i2cmaster_test/controller/reg_address">
+      <obj_property name="ElementShortName">reg_address[7:0]</obj_property>
+      <obj_property name="ObjectShortName">reg_address[7:0]</obj_property>
    </wvobject>
-   <wvobject type="logic" fp_name="/i2c_uart_transmitter_tb/tx_start">
-      <obj_property name="ElementShortName">tx_start</obj_property>
-      <obj_property name="ObjectShortName">tx_start</obj_property>
+   <wvobject type="logic" fp_name="/i2cmaster_test/controller/master_free">
+      <obj_property name="ElementShortName">master_free</obj_property>
+      <obj_property name="ObjectShortName">master_free</obj_property>
    </wvobject>
-   <wvobject type="array" fp_name="/i2c_uart_transmitter_tb/data_byte">
-      <obj_property name="ElementShortName">data_byte[7:0]</obj_property>
-      <obj_property name="ObjectShortName">data_byte[7:0]</obj_property>
+   <wvobject type="array" fp_name="/i2cmaster_test/controller/failure_signal">
+      <obj_property name="ElementShortName">failure_signal[5:0]</obj_property>
+      <obj_property name="ObjectShortName">failure_signal[5:0]</obj_property>
    </wvobject>
-   <wvobject type="logic" fp_name="/i2c_uart_transmitter_tb/tx_complete">
-      <obj_property name="ElementShortName">tx_complete</obj_property>
-      <obj_property name="ObjectShortName">tx_complete</obj_property>
+   <wvobject type="logic" fp_name="/i2cmaster_test/controller/i2c_data_rdy">
+      <obj_property name="ElementShortName">i2c_data_rdy</obj_property>
+      <obj_property name="ObjectShortName">i2c_data_rdy</obj_property>
    </wvobject>
-   <wvobject type="array" fp_name="/i2c_uart_transmitter_tb/bridge/state">
+   <wvobject type="array" fp_name="/i2cmaster_test/controller/i2c_valid_instr">
+      <obj_property name="ElementShortName">i2c_valid_instr[1:0]</obj_property>
+      <obj_property name="ObjectShortName">i2c_valid_instr[1:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/i2cmaster_test/controller/i2c_retrieved_data">
+      <obj_property name="ElementShortName">i2c_retrieved_data[15:0]</obj_property>
+      <obj_property name="ObjectShortName">i2c_retrieved_data[15:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/i2cmaster_test/controller/i2c_op_info">
+      <obj_property name="ElementShortName">i2c_op_info[7:0]</obj_property>
+      <obj_property name="ObjectShortName">i2c_op_info[7:0]</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/i2cmaster_test/controller/i2c_instr_address">
+      <obj_property name="ElementShortName">i2c_instr_address[7:0]</obj_property>
+      <obj_property name="ObjectShortName">i2c_instr_address[7:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/i2cmaster_test/controller/scl">
+      <obj_property name="ElementShortName">scl</obj_property>
+      <obj_property name="ObjectShortName">scl</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/i2cmaster_test/controller/state">
       <obj_property name="ElementShortName">state[31:0]</obj_property>
       <obj_property name="ObjectShortName">state[31:0]</obj_property>
+   </wvobject>
+   <wvobject type="logic" fp_name="/i2cmaster_test/SDA">
+      <obj_property name="ElementShortName">SDA</obj_property>
+      <obj_property name="ObjectShortName">SDA</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/i2cmaster_test/random_rx_byte">
+      <obj_property name="ElementShortName">random_rx_byte[1:0][7:0]</obj_property>
+      <obj_property name="ObjectShortName">random_rx_byte[1:0][7:0]</obj_property>
+      <obj_property name="Radix">BINARYRADIX</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/i2cmaster_test/i2c_retrieved_data">
+      <obj_property name="ElementShortName">i2c_retrieved_data[15:0]</obj_property>
+      <obj_property name="ObjectShortName">i2c_retrieved_data[15:0]</obj_property>
+      <obj_property name="Radix">BINARYRADIX</obj_property>
    </wvobject>
 </wave_config>

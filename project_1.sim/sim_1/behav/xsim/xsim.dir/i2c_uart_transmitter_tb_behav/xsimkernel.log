@@ -2,3 +2,6 @@ Running: xsim.dir/i2c_uart_transmitter_tb_behav/xsimk -simmode gui -wdb i2c_uart
 Design successfully loaded
 Design Loading Memory Usage: 180320 KB (Peak: 180440 KB)
 Design Loading CPU Usage: 1010 ms
+Simulation completed
+Simulation Memory Usage: 262316 KB (Peak: 319588 KB)
+Simulation CPU Usage: 1020 ms

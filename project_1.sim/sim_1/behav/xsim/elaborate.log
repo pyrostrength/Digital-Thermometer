@@ -1,17 +1,17 @@
 Vivado Simulator v2024.2.0
 Copyright 1986-2022 Xilinx, Inc. All Rights Reserved.
 Copyright 2022-2024 Advanced Micro Devices, Inc. All Rights Reserved.
-Running: /home/voidknight/Downloads/Vivado/2024.2/bin/unwrapped/lnx64.o/xelab --incr --debug typical --relax --mt 8 -L xil_defaultlib -L uvm -L unisims_ver -L unimacro_ver -L secureip --snapshot i2c_uart_transmitter_tb_behav xil_defaultlib.i2c_uart_transmitter_tb xil_defaultlib.glbl -log elaborate.log 
+Running: /home/voidknight/Downloads/Vivado/2024.2/bin/unwrapped/lnx64.o/xelab --incr --debug typical --relax --mt 8 -L xil_defaultlib -L uvm -L unisims_ver -L unimacro_ver -L secureip --snapshot i2cmaster_test_behav xil_defaultlib.i2cmaster_test xil_defaultlib.glbl -log elaborate.log 
 Using 8 slave threads.
 Starting static elaboration
 Pass Through NonSizing Optimizer
 Completed static elaboration
 Starting simulation data flow analysis
-WARNING: [XSIM 43-4100] "/home/voidknight/DigitalTherm/project_1.sim/sim_1/behav/xsim/glbl.v" Line 6. Module glbl has a timescale but at least one module in design doesn't have timescale.
-WARNING: [XSIM 43-4100] "/home/voidknight/DigitalTherm/project_1.sim/sim_1/behav/xsim/glbl.v" Line 6. Module glbl has a timescale but at least one module in design doesn't have timescale.
+WARNING: [XSIM 43-4099] "/home/voidknight/DigitalTherm/i2cmaster.sv" Line 36. Module i2cmaster(SCL_FREQ=3000000) doesn't have a timescale but at least one module in design has a timescale.
+WARNING: [XSIM 43-4099] "/home/voidknight/DigitalTherm/i2cmaster.sv" Line 36. Module i2cmaster(SCL_FREQ=3000000) doesn't have a timescale but at least one module in design has a timescale.
 Completed simulation data flow analysis
 Time Resolution for simulation is 1ps
-Compiling module xil_defaultlib.i2c_uart_transmitter
-Compiling module xil_defaultlib.i2c_uart_transmitter_tb
+Compiling module xil_defaultlib.i2cmaster(SCL_FREQ=3000000)
+Compiling module xil_defaultlib.i2cmaster_test
 Compiling module xil_defaultlib.glbl
-Built simulation snapshot i2c_uart_transmitter_tb_behav
+Built simulation snapshot i2cmaster_test_behav

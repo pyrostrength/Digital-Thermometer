@@ -10,7 +10,7 @@ module i2c_uart_arbiter(input logic clk,reset,
 						 input logic[7:0] i2c_instr_address, 
 						 input logic[7:0] i2c_op_info,
 						 input logic[2:0]i2c_valid_instr,
-						 input logic[5:0] failure_signal,
+						 input logic[6:0] failure_signal,
 						 input logic i2c_data_rdy, //Has data from I2C been made available?
 						 //Data from I2C controller
 						 
@@ -77,7 +77,7 @@ module i2c_uart_arbiter(input logic clk,reset,
 				    	    								 .empty(empty_modebuffer),
 				    	    								 .write(writebuffer));
 				    	    	   
-				    	 fifo_buffer #(.DW(5)) signals_buffer (.*,
+				    	 fifo_buffer #(.DW(6)) signals_buffer (.*,
 				    	    								    .wr_data(failure_signal),
 				    	    									.rd_data(buffer_failure_info),
 				    	    									.full(full_signalsbuffer),
@@ -118,6 +118,11 @@ module i2c_uart_arbiter(input logic clk,reset,
 				    	    endcase				    	         
 				    	 end   					
 				    	 
+				    	 logic[5:0] fail_bits;
+				    	 
+				    	 assign fail_bits = {buffer_failure_info[6] | buffer_failure_info[2],
+				    	   buffer_failure_info[5:3], buffer_failure_info[1:0]};
+				    	 
 				    	 always_comb begin
 				    	   /*If UART is ready for another transmission
 				    	   and there exists an instruction awaiting 
@@ -126,7 +131,7 @@ module i2c_uart_arbiter(input logic clk,reset,
 				    	   prepare to clear out the corresponding buffer entry*/
 				    	   if(!empty_addressbuffer && tx_complete) begin
 				    	       toPC_data_next = buffer_data;
-				    	       toPC_mode_next = {buffer_failure_info,op_data};
+				    	       toPC_mode_next = {fail_bits,op_data};
 				    	       toPC_address_next = buffer_address;
 				    	       data_ready_next = 1'b1;
 				    	       read = 1'b1;

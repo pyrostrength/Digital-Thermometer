@@ -84,7 +84,7 @@ module uart_i2c_arbiter(input logic clk,reset,
 				    	       i2c_data_next = {fifo_databyte2,fifo_databyte1};
 				    	       i2c_address_next = fifo_address;
 				    	       i2c_mode_next = fifo_mode;
-				    	       valid_instr_next = {1'b0,!empty_addrbuffer};
+				    	       valid_instr_next = {1'b1,!empty_addrbuffer};
 				    	       buffer_read = 1'b1;	
 				    	   end    		
 				    	   
@@ -93,7 +93,7 @@ module uart_i2c_arbiter(input logic clk,reset,
 				    	   else if(i2c_ready && empty_addrbuffer) begin
 				    	       i2c_data_next = '0; //No data to write during reads
 				    	       i2c_address_next = '0;// Default register for 1st temperature byte
-				    	       valid_instr_next = 2'b11; //Indicate that it's a default mode instruction
+				    	       valid_instr_next = 2'b01; //Indicate that it's a default mode instruction
 				    	       i2c_mode_next = {3'b001} ; //Read 2 bytes
 				    	       buffer_read = 1'b0;
 				    	   end

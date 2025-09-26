@@ -33,8 +33,8 @@ module baud_rate_generator(input logic clk,reset,
 							  end
 						
 						   always_comb begin
-						      count_next = (count === dvsr) ? '0 : count + 1;
-							  sample_tick = (count === dvsr)  ; //Sample tick is generated every full cycle
+						      count_next = (count == dvsr) ? '0 : count + 1;
+							  sample_tick = (count == dvsr)  ; //Sample tick is generated every full cycle
 						   end
 endmodule
 							

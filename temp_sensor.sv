@@ -74,8 +74,8 @@ module temp_sensor(input logic clk,reset,
 				   signal to user to retype instruction in its entirety*/
 				   output logic[3:0] time_out,
 				   
-				   output tri scl, 
-				   inout tri sda);
+				   output wire scl, 
+				   inout wire sda);
 				  
 				   logic sample_tick; 	   
 				   baud_rate_generator #(.SYS_FREQ(100000000),.BAUD_RATE(38400))
@@ -99,7 +99,7 @@ module temp_sensor(input logic clk,reset,
 				    	   received_byte <= received_byte_next;
 				    	end
 				    	
-				   logic buffers_full; 
+				   logic buffers_full,buffers_full_reg; 
 				   logic[15:0] wr_data,wr_data_reg; 
 				   logic[7:0] mode,mode_reg; 
 				   logic wr_addrbuffer,wr_opbuffer,wr_databuffer1;
@@ -108,10 +108,23 @@ module temp_sensor(input logic clk,reset,
 				   logic wr_databuffer2_reg;  
 				   logic[7:0] addr_pointer,addr_pointer_reg;
 
-                   logic times_up;
+                   logic times_up,times_up_next;
+                   
+                   /*Register between time-out detection
+                   and time_out alert system*/
+                   always_ff @(posedge clk) begin
+                        if(reset) begin
+                            times_up <= '0;
+                        end
+                        
+                        else begin
+                            times_up <= times_up_next;
+                        end
+                   end
+				   
 				   uart_i2c_tramsmitter #(.SYS_FREQ(100000000),.PERIOD(10)) 
 				                        uart_i2c_bridge(.*,
-				                                        .time_out(times_up));
+				                                        .time_out(times_up_next));
 				   
 				   
 				   /*Led flasher when instruction queue is full*/
@@ -138,6 +151,10 @@ module temp_sensor(input logic clk,reset,
 				    	   addr_pointer_reg <= '0;
 				    	   mode_reg <= '0;
 				    	   wr_data_reg <= '0;
+				    	   
+				    	   /*Synchrononize the signal indicating
+				    	   full uart-i2c buffers*/
+				    	   buffers_full <= '0;
 				    	end
 				    	                
 				    	else begin
@@ -148,28 +165,35 @@ module temp_sensor(input logic clk,reset,
 				    	   addr_pointer_reg <= addr_pointer;
 				    	   wr_data_reg <= wr_data;
 				    	   mode_reg <= mode;
+				    	   
+				    	   /*We pass buffers_full signal through
+				    	   a register with input from arbiter stage
+				    	   and register output on uart to i2c stage*/
+				    	   buffers_full <= buffers_full_reg;
 				    	end
 				    	
-				   logic i2c_ready;
+				    	
+				   logic master_free,master_free_reg; //Indicates controller is ready to initiate communication
 				   logic[15:0] i2c_data;
 				   logic[7:0] i2c_address,i2c_mode;
 				   logic[1:0] valid_instr; 
 				   	
 				   uart_i2c_arbiter(.*,
+				                    .buffers_full(buffers_full_reg),
+				                    .i2c_ready(master_free),
 				                    .wr_data(wr_data_reg),
 				                    .wr_addrbuffer(wr_addrbuffer_reg),
 				                    .wr_databuffer1(wr_databuffer1_reg),
 				                    .wr_databuffer2(wr_databuffer2_reg),
 				                    .wr_opbuffer(wr_opbuffer_reg),
-				                    .initiate(initiate_reg),
 				                    .addr_pointer(addr_pointer_reg),
 				                    .mode(mode_reg));
 				    	                
 				   logic[3:0] fail_signals_next, fail_signals_reg;
 				   logic i2c_ready_reg, i2c_ready_next;
-				   logic full_i2cbuffer;
+				   logic full_i2cbuffer, full_i2cbuffer_reg;
 				   
-				   logic master_free; //Indicates controller is ready to initiate communication
+				   
 				   logic[6:0] failure_signal, failure_signal_reg;//Indicates read/write failure
 				 
 				   /*Info for completed instruction to be passed onto next pipeline
@@ -180,18 +204,33 @@ module temp_sensor(input logic clk,reset,
 				   logic[7:0] i2c_op_info, i2c_op_info_reg;
 				   logic[7:0] i2c_instr_address, i2c_instr_address_reg;
 				   
-				   /*model of pullup resistor on sda line.
+				   /*model of pullup resistor on sda
+				   and scl line.
 				   required for proper simulation*/
 	               assign (pull1,strong0) sda = 1'b1;
+	               
+	               assign(pull1,strong0) scl = 1'b1;
+	               
+	               //Control Register In Between I2C controller and UART-I2C stage
+	               always_ff @(posedge clk) begin
+	                   if(reset) begin
+	                       master_free <= '0;
+	                   end
+	                   
+	                   else begin
+	                       master_free <= master_free_reg;
+	                   end
+	               end
 				  
 				   i2cmaster #(.SYS_CLK_FREQ(100000000),.SCL_FREQ(200000))
 				             i2ccontroller(.*,
-				    	    			   .full_i2cbuffer(full_i2cbuffer),
+				                           .master_free(master_free_reg),
+				                           .sda(sda),
+				                           .scl(scl),
+				    	    			   .full_i2cbuffer(full_i2cbuffer_reg),
 				    	    			   .wr_data(i2c_data),
 				    	    			   .mode(i2c_mode),
-				    	    			   .reg_address(i2c_address),
-				    	    			   .serialbusaddr(7'b1001000),
-				    	    			   .dvsr(7'b0010101));
+				    	    			   .reg_address(i2c_address));
 	    	
 				   //Register in between I2C controller and I2C - UART ARBITER STAGE
 				   always_ff @(posedge clk) 
@@ -202,6 +241,11 @@ module temp_sensor(input logic clk,reset,
 				    	   i2c_op_info_reg <= '0;
 				    	   i2c_valid_instr_reg <= '0;
 				    	   i2c_data_rdy_reg <= '0;
+				    	   
+				    	   /*Control signal passed from
+				    	   arbiter stage to I2C controller to indicate
+				    	   that buffers aren't full*/
+				    	   full_i2cbuffer_reg <= '0;
 				    	end
 				    	    		
 				    	else begin
@@ -211,6 +255,8 @@ module temp_sensor(input logic clk,reset,
 				    	   i2c_valid_instr_reg <= i2c_valid_instr;
 				    	   i2c_instr_address_reg <= i2c_instr_address;
 				    	   i2c_op_info_reg <= i2c_op_info;
+				    	   
+				    	   full_i2cbuffer_reg <= full_i2cbuffer;
 				    	end
 				    	    		
 				   //I2C-uart arbitrer. Determine whether UART transmission can take place depending on data info. Results asked for take priority.
@@ -218,7 +264,21 @@ module temp_sensor(input logic clk,reset,
 				   logic[7:0] toPC_address;
 				   logic[7:0] toPC_mode;
 				   logic data_ready;
-				   logic tx_complete;
+				   logic tx_complete, tx_complete_next;
+				   logic empty_i2cbuffer;
+				   
+				   /*Control register that indicates UART transmission
+				   completion.*/
+				   always_ff @(posedge clk) begin
+				        if(reset) begin
+				            tx_complete <= '0;
+				        end
+				        
+				        else begin
+				            tx_complete <= tx_complete_next;
+				        end
+				   end
+				   
 				   
 				   i2c_uart_arbiter i2c_to_uart (.*, 
 				     							 .i2c_retrieved_data(i2c_retrieved_data_reg),
@@ -228,6 +288,9 @@ module temp_sensor(input logic clk,reset,
 				     							 .failure_signal(failure_signal_reg),
 				     							 .i2c_data_rdy(i2c_data_rdy_reg));
 				   //i2c to uart arbiter has register for passing data to i2c-uart bridge built in. Thus we need only make direct connections
+				   
+				   
+				   
 				     	
 				    	
 				  logic[7:0] tx_byte, tx_byte_next;
@@ -236,6 +299,7 @@ module temp_sensor(input logic clk,reset,
 				    	
 				  //For your own sake have internal registers that store the necessary data bytes.
 				  i2c_uart_transmitter i2c_uart_bridge (.*,
+				                                        .tx_complete(tx_complete_next),
 				    	    							.tx_start(tx_start_next),
 				    	    							.data_byte(tx_byte_next));
 				    	    									  
@@ -256,6 +320,7 @@ module temp_sensor(input logic clk,reset,
 				    		
 				    	
 				  uart_tx uart_transmitter(.*,
+				                           .tx(rx),
 				    					   .data_byte(tx_byte),
 				    					   .tx_start(tx_start),
 				    					   .tx_done_tick(tx_done_tick_next));

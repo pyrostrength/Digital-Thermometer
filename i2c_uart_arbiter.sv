@@ -30,11 +30,12 @@ module i2c_uart_arbiter(input logic clk,reset,
 						   
 						 //Data read from buffers 
 						 logic[15:0] buffer_data;
-						 logic[5:0] buffer_failure_info;
+						 logic[6:0] buffer_failure_info;
 						 logic[7:0] buffer_mode;
 						 logic[7:0] buffer_address;
 						 
 						 logic data_ready_next;
+						 logic writebuffer;
 						 
 						 //Data sent to PC 
 						 logic[15:0] toPC_data_next;

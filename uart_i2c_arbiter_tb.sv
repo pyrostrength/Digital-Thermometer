@@ -2,14 +2,13 @@ module uart_i2c_arbiter_tb;
     logic clk,reset;
 	logic i2c_ready;
 	logic wr_addrbuffer, wr_databuffer1, wr_databuffer2, wr_opbuffer;
-	logic initiate;
 	logic[7:0] addr_pointer;
 	logic[15:0] wr_data;
-	logic[2:0] mode;
+	logic[7:0] mode;
 	
 	logic[15:0] i2c_data;
 	logic[7:0] i2c_address;
-	logic[2:0] i2c_mode;
+	logic[7:0] i2c_mode;
 	logic[1:0] valid_instr;
 	logic buffers_full;
 	
@@ -35,7 +34,6 @@ module uart_i2c_arbiter_tb;
             wr_opbuffer = '1;
             wr_databuffer1 = '1;
             wr_databuffer2 = '1;
-            initiate = '1;
             addr_pointer = 11 + 2*i;
             wr_data = 67 + i;
             mode = 3'b011; 
@@ -51,7 +49,6 @@ module uart_i2c_arbiter_tb;
             wr_opbuffer = '0;
             wr_databuffer1 = '0;
             wr_databuffer2 = '0;
-            initiate = '0;
             i2c_ready = '1;
             #10;
         end

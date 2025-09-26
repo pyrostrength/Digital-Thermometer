@@ -11,15 +11,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="14,796.666 ns"></ZoomStartTime>
-      <ZoomEndTime time="15,796.667 ns"></ZoomEndTime>
-      <Cursor1Time time="15,630.000 ns"></Cursor1Time>
+      <ZoomStartTime time="506,073.333 ns"></ZoomStartTime>
+      <ZoomEndTime time="507,185.334 ns"></ZoomEndTime>
+      <Cursor1Time time="507,000.000 ns"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="110"></NameColumnWidth>
       <ValueColumnWidth column_width="106"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="19" />
+   <WVObjectSize size="20" />
    <wvobject type="logic" fp_name="/i2cmaster_test/controller/clk">
       <obj_property name="ElementShortName">clk</obj_property>
       <obj_property name="ObjectShortName">clk</obj_property>
@@ -53,8 +53,8 @@
       <obj_property name="ObjectShortName">master_free</obj_property>
    </wvobject>
    <wvobject type="array" fp_name="/i2cmaster_test/controller/failure_signal">
-      <obj_property name="ElementShortName">failure_signal[5:0]</obj_property>
-      <obj_property name="ObjectShortName">failure_signal[5:0]</obj_property>
+      <obj_property name="ElementShortName">failure_signal[6:0]</obj_property>
+      <obj_property name="ObjectShortName">failure_signal[6:0]</obj_property>
    </wvobject>
    <wvobject type="logic" fp_name="/i2cmaster_test/controller/i2c_data_rdy">
       <obj_property name="ElementShortName">i2c_data_rdy</obj_property>
@@ -96,6 +96,11 @@
    <wvobject type="array" fp_name="/i2cmaster_test/i2c_retrieved_data">
       <obj_property name="ElementShortName">i2c_retrieved_data[15:0]</obj_property>
       <obj_property name="ObjectShortName">i2c_retrieved_data[15:0]</obj_property>
+      <obj_property name="Radix">BINARYRADIX</obj_property>
+   </wvobject>
+   <wvobject type="array" fp_name="/i2cmaster_test/failure_signal">
+      <obj_property name="ElementShortName">failure_signal[6:0]</obj_property>
+      <obj_property name="ObjectShortName">failure_signal[6:0]</obj_property>
       <obj_property name="Radix">BINARYRADIX</obj_property>
    </wvobject>
 </wave_config>

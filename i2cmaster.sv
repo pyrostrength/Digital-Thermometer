@@ -66,11 +66,10 @@ module i2cmaster(input logic clk,reset,
 				 parameter SCL_FREQ = 350000; 
 				 localparam int DVSR = (SYS_CLK_FREQ/SCL_FREQ);
 				 localparam int THIRD = (SYS_CLK_FREQ/(SCL_FREQ*3));
-				 localparam int TWO_THIRD = DVSR*2/3;
 				 
 				 /*Number of SYS_CLK cycles per SCL cycle*/
 				 logic[31:0] dvsr;
-				 logic[31:0] third,half; //Numbers corresponding to quarter and half of SCL clock cycle
+				 logic[31:0] third;//Numbers corresponding to quarter and half of SCL clock cycle
 				 assign dvsr = DVSR;
 				 assign third = THIRD;
 				 
@@ -86,8 +85,8 @@ module i2cmaster(input logic clk,reset,
 				 
 				 state_type state, state_next;
 				 logic sda_next;
-				 logic scl_reg, scl_next;
-				 logic[9:0] count, count_next; //Counter for I2C clock cycle
+				 logic scl_next;
+				 logic[31:0] count, count_next; //Counter for I2C clock cycle
 				 logic[4:0] bit_reg,bit_next; //Counts number of bits transmitted or received.
 				 
 				     	
@@ -124,7 +123,6 @@ module i2cmaster(input logic clk,reset,
 				    if(reset) begin
 				        received_data <= '0;
 				        state <= idle;
-				     	scl_reg <= '1;
 				     	bit_reg <= '0;
 				     	count <= '0;
 				     	write_reg <= '0;
@@ -151,7 +149,6 @@ module i2cmaster(input logic clk,reset,
 				     	received_data <= received_data_next;
 				     	readbyte_reg <= readbyte_next;
 				     	count <= count_next;
-				     	scl_reg <= scl_next;
 				     	state <= state_next;
 				     	bit_reg <= bit_next;
 				     	write_reg <= write_next;
@@ -176,7 +173,7 @@ module i2cmaster(input logic clk,reset,
 				 /*SCL and SDA have open-drain structure. Simulating it
 				 is currently a difficult task but SCL situation is 
 				 easy as only master drives the SCL line*/ 					   					
-			     assign scl = scl_reg;
+			     assign (highz1,strong0) scl = (scl_next) ? 'z:'0;
 			     
 			     /*Master writes to SDA when writing data bytes,
 			     ,when initiating a communication by pulling sda low
@@ -209,6 +206,7 @@ module i2cmaster(input logic clk,reset,
 				    bit_next= bit_reg;
 				    count_next = count + 1;
 				    sda_next = write_reg[8];
+				    scl_next = '1;
 				    hold_sda = 1'b0;
 				    read_phase = 1'b0;
 				    master_free = 1'b0;
@@ -236,15 +234,10 @@ module i2cmaster(input logic clk,reset,
 				        idle: begin
 				          scl_next = '1;
 				     	  sda_next = 1'b1;
-				     	  /*I2C controller cannot initiate communication
-				     	  if buffers in next pipeline is full.*/
 				     	  master_free = (!full_i2cbuffer);
-				     	  
 				     	  /*Communication initiated only if 
 				     	  an instruction requests it and i2c buffers aren't
-				     	  full. Valid_instr[0] is empty signal of buffers in
-				     	  prior stage and valid_instr[1] indicates system 
-				     	  operating in default mode*/
+				     	  full. */
 				     	  if(valid_instr[0] & !full_i2cbuffer) begin 
 				     	      state_next = start1;
 				     		  count_next = '0;
@@ -261,7 +254,7 @@ module i2cmaster(input logic clk,reset,
 				     		  valid_next = valid_instr;
 				     		  data_next = wr_data;
 				     		  address_next = reg_address;
-				     	  end
+				     	   end
 				        end
 				     			
 				     	start1: begin
@@ -273,7 +266,6 @@ module i2cmaster(input logic clk,reset,
 				     	  if(count == third - 1) begin
 				     	      state_next = start2; 
 				     		  count_next = '0;
-				     		  scl_next = '0; 
 				     	  end
 				     	end
 				     			
@@ -295,7 +287,6 @@ module i2cmaster(input logic clk,reset,
 				     	  if(count == third - 1) begin
 				     		  state_next = address2;
 				     		  count_next = '0;
-				     		  scl_next = 1'b1;  
 				     	  end
 				     	end
 				     			
@@ -307,7 +298,7 @@ module i2cmaster(input logic clk,reset,
 				     	      received_data_next = (bit_reg != 8) ? {received_data[14:0],sda} : received_data;
 				     	      sba_send_fail_next  = (bit_reg == 8 && sda != 0) ? 1'b1 : sba_send_fail;
 				     	      resend_sba_fail_next = (bit_reg == 8 && sda != 0 && readbyte_reg) ? 1'b1:1'b0; 
-				     	      scl_next = 1'b0;
+				     	      //scl_next = 1'b0;
 				     	      state_next = address3;
 				     	      count_next = '0;
 				     	  end
@@ -343,7 +334,6 @@ module i2cmaster(input logic clk,reset,
 				     	  if(count == third - 1) begin
 				     		  state_next = address5;
 				     		  count_next = '0;
-				     		  scl_next = 1'b1;
 				     	  end
 				     	end
 				     			
@@ -353,7 +343,6 @@ module i2cmaster(input logic clk,reset,
 				     	  if(count == third - 1) begin
 				     	      received_data_next = (bit_reg != 8) ? {received_data[14:0],sda} : received_data;
 				     	      address_send_fail_next  = (bit_reg == 8 && sda != 0) ? 1'b1 : address_send_fail;
-				     	      scl_next = '0;
 				     	      state_next = address6;
 				     	      count_next = '0;
 				     	  end
@@ -400,7 +389,6 @@ module i2cmaster(input logic clk,reset,
 				     	  if(count == third - 1) begin
 				     		  state_next = write2;
 				     		  count_next = '0;
-				     		  scl_next = 1'b1;
 				     	  end
 				     	end
 				     	
@@ -411,7 +399,6 @@ module i2cmaster(input logic clk,reset,
 				     	  if(count == third - 1) begin
 				     	      received_data_next = (bit_reg != 8) ? {received_data[14:0],sda} : received_data;
 				     	      write_byte1_fail_next  = (bit_reg == 8 && sda != 0) ? 1'b1 : write_byte1_fail;
-				     	      scl_next = 1'b0;
 				     	      state_next = write3;
 				     	      count_next = '0;
 				     	  end
@@ -451,7 +438,6 @@ module i2cmaster(input logic clk,reset,
 				     	  if(count == third - 1) begin
 				     		  state_next = write5;
 				     		  count_next = '0;
-				     		  scl_next = 1'b1;
 				     	  end
 				     	end
 				     			
@@ -461,7 +447,6 @@ module i2cmaster(input logic clk,reset,
 				     	  if(count == third - 1) begin
 				     	      received_data_next = (bit_reg != 8) ? {received_data[14:0],sda} : received_data;
 				     	      write_byte2_fail_next  = (bit_reg == 8 && sda != 0) ? 1'b1 : write_byte2_fail;
-				     	      scl_next = 1'b0;
 				     		  state_next = write6;
 				     		  count_next = '0;
 				     	  end
@@ -493,7 +478,6 @@ module i2cmaster(input logic clk,reset,
 				     	  sda_next = 1'b1;
 				     	  hold_sda = '1;
 				     	  if(count == third - 1) begin
-				     	      scl_next = 1'b1;
 				     		  count_next = '0;
 				     		  state_next = restart2;
 				     	  end
@@ -507,7 +491,6 @@ module i2cmaster(input logic clk,reset,
 				     	  if(count == third - 1) begin
 				     	      state_next = restart3;
 				     		  count_next = '0;
-				     		  sda_next = '0; 
 				     	  end
 				     	end
 				     	
@@ -532,7 +515,6 @@ module i2cmaster(input logic clk,reset,
 				     	  hold_sda = '1;
 				     	  if(count == third - 1) begin
 				     	      state_next = address1;
-				     		  scl_next = 1'b0;
 				     		  count_next = '0;
 				     		  readbyte_next = 1'b1;
 				     		  /*The 1'b1 is necessary since we need to indicate
@@ -547,7 +529,6 @@ module i2cmaster(input logic clk,reset,
 				     	  if(count == third - 1) begin
 				     		  state_next = read2;
 				     		  count_next = '0;
-				     		  scl_next = 1'b1;
 				     	  end
 				     	end
 				     			
@@ -557,7 +538,6 @@ module i2cmaster(input logic clk,reset,
 				     		if(count == third - 1) begin
 				     	      received_data_next = (bit_reg != 8) ? {received_data[14:0],sda} : received_data;
 				     	      read_byte1_fail_next  = (bit_reg == 8 && sda != 0) ? 1'b1 : read_byte1_fail;
-				     	      scl_next = '0;
 				     	      state_next = read3;
 				     	      count_next = '0;
 				     	    end
@@ -600,7 +580,6 @@ module i2cmaster(input logic clk,reset,
 				     	  if(count == third - 1) begin
 				     		  state_next = read5;
 				     		  count_next = '0;
-				     		  scl_next = 1'b1;
 				     	  end
 				     	end
 				     	
@@ -611,7 +590,6 @@ module i2cmaster(input logic clk,reset,
 				     	  if(count == third - 1) begin
 				     	      received_data_next = (bit_reg != 8) ? {received_data[14:0],sda} : received_data;
 				     	      read_byte2_fail_next  = (bit_reg == 8 && sda != 1) ? 1'b1 : read_byte2_fail;
-				     	      scl_next = '0;
 				     	      state_next = read6;
 				     	      count_next = '0;
 				     	  end
@@ -629,7 +607,7 @@ module i2cmaster(input logic clk,reset,
 				     			 state_next = stop1;
 				     			 /*SDA must be pulled low in preparation of pulling
 				     			 it high when SCL is high to signal stop */
-				     			 sda_next = '0; 
+				     			 //sda_next = '0; 
 				     		  end
 				     					
 				     		  else  begin
@@ -649,7 +627,6 @@ module i2cmaster(input logic clk,reset,
 				     	  if(count == third - 1) begin
 				     	      state_next = stop2;
 				     		  count_next = '0;
-				     		  scl_next = 1'b1;
 				     	  end
 				     	end
 				     			
@@ -660,7 +637,6 @@ module i2cmaster(input logic clk,reset,
 				     	  if(count == third - 1) begin
 				     	      state_next = stop3;
 				     		  count_next = '0;
-				     		  sda_next = '1;
 				     	  end
 				     	end
 				     	
@@ -673,11 +649,24 @@ module i2cmaster(input logic clk,reset,
 				     	  scl_next = 1'b1;
 				     	  sda_next = 1'b1;
 				     	  if(count == third -1) begin
-				     	      state_next = idle;
-				     		  count_next = '0;
 				     		  i2c_data_rdy = 1'b1;
 				     	  end
+				     	  
+				     	  /*I2C controller cannot initiate communication
+				     	  if buffers in next pipeline is full
+				     	  After I2C completes operation and transmits the data to 
+				     	  next pipeline stage it takes 2 clock cycles for
+				     	  data to be written to buffer and buffer full signal
+				     	  passed to controller. We must wait for this full
+				     	  signal before initiating further communication*/
+				     	  else if(count == third + 1) begin
+				     	      state_next = idle;
+				     	      count_next = '0;
+				     	  end
 				     	end
+				     	
+				     	 
+				     	       
 							
 				   endcase
 		         end			

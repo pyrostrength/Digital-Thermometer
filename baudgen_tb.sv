@@ -25,11 +25,11 @@ module baudgen_tb;
         
         //Observe tick after 4 cycles
         #40
-        assert(sample_tick == 1'b1); //Assertion passed via waveform viewing
+        assert(sample_tick == 1'b1); 
         
         //Sample tick must go low in new cycle
         #10
-        assert(sample_tick == '0); //Assertion passed via waveform viewing
+        assert(sample_tick == '0); 
         
         /*If dvsr changes simulation then time point at which
         sample tick goes high changes. Thus for an increase in
@@ -38,7 +38,7 @@ module baudgen_tb;
         dvsr = 8;
         
         #20
-        assert(sample_tick == '0); //Assertion passed via waveform viewing
+        assert(sample_tick == '0); 
     end
     
     

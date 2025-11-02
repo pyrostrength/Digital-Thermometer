@@ -21,6 +21,7 @@ A C++ program on PC side ensures that instructions are sent out to FPGA in appro
 Note that for the ADT7420 temp sensor all 9 temperature value registers are read only - the two registers
 relevant for project are the temperature value M.S.B register(0x00) and temperature value L.S.B register
 (0x01), each of which can be read independently.
+
 Only the configuration register and the software reset register can be written to, with software reset
 register being write only. The configuration register sets the various configuration mode for the
 I2C temperature sensor including normal mode(in which ADT7420 is continously converting temperature 
@@ -28,40 +29,30 @@ and storing in the temperature value registers. More config modes are detailed i
 as well as more info on the available ADT7420's temperature registers.
 
 Thus our C++ program implements read temperature function(1 or 2 bytes), reset(sets temp sensor
-into normal mode), sps((sets temp sensor into one-shot mode), shutdown
-                    
-Further validity checking is done on FPGA because if instructions don't conform to the specification
-then they're discarded. Additionally if too much of a delay occurs in between sending instruction
-bytes from PC then instruction is discarded - wait time can be programmed FPGA side by changing 
-the PERIOD parameter of the UART to I2C module.
+into normal mode), sps((sets temp sensor into one-shot mode) and shutdown mode. If user
+can somehow send instructions faster than they can be processed then buffer fills and an LED lights
+up indicating full buffers. User should repeat their entire instruction sequence for 
+good results.
 
-If user can, somehow, send too many instruction for pipeline
-to handle, such that instruction queue fills up, then an LED will flash and user is required
-to retype all instructions written during the flashing period.
-
-Note: the timeout feature will be implemented on the FPGA side and on PC side. That way, a user
-will always notice the timeout especially when the LEDs on the FPGA are tiny. However, user will
-have to observe FPGA led's to make sure they aren't sending in too many instructions at once.
-
-Once relevant operation has been carried out by I2C controller in the FPGA processing pipeline,
-instruction info such as address of temp senosr register which instruction addressed, 
-operation performed and retrieved data is sent to PC. The communication packet for sending an instruction
-from PC is identical to that of sending it results back to PC. Thus transmission includes:
+Once relevant operation has been carried out by instruction info such as 
+address of temp senosr register which instruction addressed, 
+operation performed and retrieved data is sent to back to PC. 
+The communication packet for sending an instruction from PC is identical to that of sending it results back to PC and it
+includes:
 - A start byte
 - Register Address Byte
 - Operation Byte
-- Optional Data Byte 1
-- Optional Data Byte 2
+- Optional Data Byte 1(in case of reads)
+- Optional Data Byte 2(in case of reads)
 - Stop Byte
 
-The only minor difference is that the operation byte includes some flag bits indicating
-whether read/write operations carried out by I2C controller and temp sensor were
-carried out correctly. To be specific, with the transmission of every byte, an ack bit/
+Only minor difference is that the operation byte has flag bits indicating
+whether read/write operations were actually carried out.
+To be specific, with the transmission of every byte over I2C, an ack bit/
 nack bit must be sent by the receiver. If no ack/nack bit is sent by receiver after it
 recieves a data byte, we indicate so in the flag bits.
 
-The data sent back from FPGA to PC over UART is analyzed and the results displayed on the
-console.
+A C++ program analyzes the data sent back over UART and writes the results to a file.
 
 
   
